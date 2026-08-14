@@ -99,7 +99,7 @@ flowchart TB
 
 ### Стек
 
-Next.js 15 · TS Strict · Biome · Prisma · PostgreSQL · Auth.js v5 · Zod · Husky · pnpm
+Next.js 16.3 · TS Strict · Biome · Prisma · PostgreSQL · Auth.js v5 · Zod · Husky · pnpm
 
 ### Задачи
 
