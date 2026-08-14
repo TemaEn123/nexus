@@ -6,10 +6,13 @@ Kanban-доска. Учебный проект: Next.js App Router, TypeScript, 
 
 - Node 24 (см. `.nvmrc`)
 - [pnpm](https://pnpm.io) 11
+- Postgres: [Neon](https://neon.tech) (Direct `DATABASE_URL`, хост без `-pooler`)
 
 ```bash
 nvm use
+cp .env.example .env   # вставь Direct URL из Neon
 pnpm install
+pnpm db:migrate
 pnpm dev
 ```
 
@@ -21,10 +24,15 @@ pnpm dev
 | --- | --- |
 | `pnpm dev` | Dev-сервер |
 | `pnpm lint` | Biome (lint + проверка формата) |
-| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm typecheck` | `next typegen` + `tsc --noEmit` |
 | `pnpm build` | Production-сборка |
+| `pnpm db:migrate` | Prisma-миграция |
+| `pnpm db:studio` | Таблицы в браузере |
+| `pnpm db:generate` | Клиент Prisma (также в `postinstall`) |
 
 Pre-commit запускает `lint` + `typecheck`. Коммить из **терминала** — Source Control в Cursor сейчас пропускает git-хуки.
+
+`.env` в git не попадает. Prisma (`src/shared/lib/db.ts`) — только сервер, не `"use client"`.
 
 ## Архитектура
 
