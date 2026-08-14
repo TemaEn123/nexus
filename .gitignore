@@ -39,6 +39,8 @@ skills-lock.json
 .env*
 !.env.example
 
+.pnpm-store/
+
 # vercel
 .vercel
 
