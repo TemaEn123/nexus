@@ -48,4 +48,4 @@ FSD-lite: слои появляются вместе с кодом, пустые
 
 Auth: Auth.js v5 (`next-auth@beta`), JWT-сессия, Credentials + GitHub. Защита маршрутов — `src/proxy.ts` (Next.js 16, не `middleware.ts`) + `requireUser()` в RSC.
 
-План: [docs/NEXUS-LEARNING-PLAN.md](docs/NEXUS-LEARNING-PLAN.md).
+План: [docs/NEXUS-LEARNING-PLAN.md](docs/NEXUS-LEARNING-PLAN.md). Стек шагов 1–3 к собесу: [docs/M1-STACK-INTERVIEW.md](docs/M1-STACK-INTERVIEW.md).
