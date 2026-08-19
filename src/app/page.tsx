@@ -1,4 +1,30 @@
+import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/shared/lib/site";
+
+/**
+ * Канонический OG для `/`. Вложенный `openGraph` в Next заменяет родителя,
+ * поэтому type/locale/siteName копируем. Картинки — из `opengraph-image` через `parent`.
+ * Без fetch и без `auth()`. Title доски — в М2, когда появится сегмент.
+ */
+export async function generateMetadata(
+  _props: PageProps<"/">,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const parentMeta = await parent;
+
+  return {
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+      siteName: SITE_NAME,
+      title: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      url: "/",
+      images: parentMeta.openGraph?.images ?? [],
+    },
+  };
+}
 
 /** Публичная витрина вместо шаблона create-next-app. Канбан — в М2. */
 export default function Home() {

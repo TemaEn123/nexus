@@ -3,6 +3,8 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Not found",
+  description: "This page does not exist.",
+  robots: { index: false, follow: false },
 };
 
 /**

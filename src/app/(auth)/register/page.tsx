@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { authFormError } from "@/features/auth/form-error";
 import { RegisterForm } from "@/features/auth/register-form";
+
+export const metadata: Metadata = {
+  title: "Create account",
+};
 
 export default async function RegisterPage({
   searchParams,

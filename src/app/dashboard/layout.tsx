@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { UserMenuSkeleton } from "./_ui/dashboard-skeletons";
 import { UserMenu } from "./_ui/user-menu";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * Shell dashboard: header не ждёт сессию.

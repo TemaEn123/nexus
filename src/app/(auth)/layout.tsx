@@ -1,3 +1,9 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 /**
  * Route group: `(auth)` не попадает в URL.
  * Общая колонка для `/login` и `/register` — без хедера приложения.
