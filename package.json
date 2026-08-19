@@ -14,7 +14,8 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:migrate:deploy": "prisma migrate deploy"
   },
   "engines": {
     "node": ">=20.9.0 <25"
