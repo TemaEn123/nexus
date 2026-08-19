@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { authFormError } from "@/features/auth/form-error";
 import { LoginForm } from "@/features/auth/login-form";
+
+export const metadata: Metadata = {
+  title: "Log in",
+};
 
 /**
  * Кастомная страница входа (`pages.signIn: "/login"` в auth.ts).
