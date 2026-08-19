@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/server/auth";
 
 /**
- * Сессия обязательна: нет `user.id` → редирект на логин.
- * Proxy уже отсекает анонимов, это второй слой для RSC и (позже) Route Handlers.
+ * Сессия обязательна на страницах: нет `user.id` → редирект на логин.
+ * Proxy уже отсекает анонимов, это второй слой для RSC (dashboard).
+ * Для Route Handlers — `requireApiUser()`: 401 JSON, без redirect.
  * Возвращаем `session.user`, чтобы вызывающему коду не проверять null.
  */
 export async function requireUser() {
