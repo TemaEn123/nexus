@@ -1,0 +1,22 @@
+/**
+ * Коды, которые `createBoardAction` кладёт в `?error=` после redirect.
+ * Неизвестные коды → общее сообщение, без Zod/Prisma.
+ */
+const BOARD_FORM_ERRORS: Record<string, string> = {
+  invalid: "Title is required (1–120 characters).",
+};
+
+export function boardFormError(
+  code: string | string[] | undefined,
+): string | undefined {
+  if (!code) {
+    return undefined;
+  }
+
+  const key = Array.isArray(code) ? code[0] : code;
+  if (!key) {
+    return undefined;
+  }
+
+  return BOARD_FORM_ERRORS[key] ?? "Something went wrong. Try again.";
+}
