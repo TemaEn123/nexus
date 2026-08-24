@@ -15,6 +15,6 @@
 
 Проверка: HTTP smoke 31/31 (401, CRUD, Zod strict, move, чужая колонка другой доски, фейковый id). Второй аккаунт и Studio глазами не гоняли.
 
-Не делали: UI, TanStack Query, тесты, пагинация, уплотнение `position`.
+Не делали: UI, TanStack Query, тесты, пагинация, уплотнение `position` (unique + compact/shift — М2, до DnD).
 
 Дальше: App Router basics (`loading.tsx`, `error.tsx`, Suspense).

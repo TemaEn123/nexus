@@ -141,16 +141,18 @@ React 19 · Tailwind CSS v4 · shadcn/ui · @dnd-kit · Zustand · TanStack Quer
 
 1. Dashboard: список boards, create/delete board
 2. Kanban board: columns + cards, responsive layout
-3. @dnd-kit: drag cards между columns + reorder; keyboard a11y
-4. TanStack Query: fetch/mutate с optimistic updates + rollback on error
-5. Server Actions + `useOptimistic` для create/update/delete card
-6. React Compiler: включить, убрать лишние `useMemo`/`useCallback`, понять когда они ещё нужны
-7. Suspense + streaming: skeleton loaders для колонок, parallel fetching (anti-waterfall)
-8. **AI MVP (последняя неделя):** «Suggest subtasks» — streaming через Vercel AI SDK, Route Handler как proxy
+3. **Position invariant:** unique `(boardId, position)` / `(columnId, position)`; compact/shift при move в одной транзакции; `P2002` → 409, не 500. Миграция Prisma (не `migrate` против общего Neon с prod — сначала развести БД или чистить дубли)
+4. @dnd-kit: drag cards между columns + reorder; keyboard a11y
+5. TanStack Query: fetch/mutate с optimistic updates + rollback on error
+6. Server Actions + `useOptimistic` для create/update/delete card
+7. React Compiler: включить, убрать лишние `useMemo`/`useCallback`, понять когда они ещё нужны
+8. Suspense + streaming: skeleton loaders для колонок, parallel fetching (anti-waterfall)
+9. **AI MVP (последняя неделя):** «Suggest subtasks» — streaming через Vercel AI SDK, Route Handler как proxy
 
 ### Deep Dive
 
 - **RSC vs Client:** waterfall problem; islands of interactivity
+- **Position uniqueness:** `max+1` гонка без unique; unique без compact ломает DnD (занятый слот → violation). Shift соседей vs gap-based (1000, 2000, 3000)
 - **Optimistic UI:** `onMutate` + rollback в TanStack Query; `useOptimistic` vs Query
 - **Zustand slices:** подписка на конкретные поля, no unnecessary re-renders
 - **AI security:** API keys только на server; rate limiting basics
@@ -158,6 +160,7 @@ React 19 · Tailwind CSS v4 · shadcn/ui · @dnd-kit · Zustand · TanStack Quer
 ### Результат месяца
 
 - Полностью рабочая Kanban с DnD и мгновенным UI
+- Карточки/колонки без дублей `position`; drag не ловит unique violation
 - AI генерирует subtasks для карточки (streaming)
 - Красивый UI (shadcn + Tailwind v4)
 
@@ -249,18 +252,21 @@ Sentry · Structured logging · Environment management
 3. **Error boundaries:** graceful UI для server/client errors
 4. **AI rate limiting:** лимит запросов per user (in-memory или DB counter)
 5. **Security checklist:** CSRF, env validation, input sanitization для AI prompts
-6. **OTel (теория):** понимать traces/metrics/logs — без имплементации
+6. **Auth hardening:** подтверждение email (Resend/Nodemailer + `VerificationToken`); после verify выключить `allowDangerousEmailAccountLinking`. Пока почта не подтверждена — GitHub не склеивать с Credentials-аккаунтом
+7. **OTel (теория):** понимать traces/metrics/logs — без имплементации
 
 ### Deep Dive
 
 - **Observability triad:** logs vs metrics vs traces — когда что
 - **Source maps:** безопасная настройка (не светить код публично)
 - **AI cost control:** token limits, caching repeated prompts
+- **Account linking:** почему Auth.js не линкует OAuth к User без `emailVerified`, и чем опасен `allowDangerousEmailAccountLinking` на публичном URL
 
 ### Результат месяца
 
 - Ошибки падают в Sentry с readable stack traces
 - AI endpoint защищён rate limit
+- Credentials + GitHub склеиваются только после verified email; флаг `allowDangerousEmailAccountLinking` выключен
 - Production checklist в README
 
 ### Interview story
@@ -353,6 +359,7 @@ Sentry · Structured logging · Environment management
 - [ ] Core Web Vitals в green zone (скрин в README)
 - [ ] a11y: keyboard DnD + axe-core tests pass
 - [ ] Sentry ловит ошибки с source maps
+- [ ] Email verification работает; опасный account linking выключен
 - [ ] Docker: `docker compose up` работает
 - [ ] 3 system design stories записаны
 - [ ] 50+ LeetCode задач решены

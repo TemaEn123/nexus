@@ -7,7 +7,7 @@
 - Credentials + GitHub; сессия JWT (Credentials не умеет database). `session.user.id` из `token.sub`
 - Страницы `/login`, `/register`, `/dashboard`; actions в `src/features/auth/`
 - `src/proxy.ts`: `/dashboard` без сессии → `/login`; залогиненный с `/login`|`/register` → `/dashboard`
-- GitHub: lowercase email + `allowDangerousEmailAccountLinking` (MVP; в проде нужна своя верификация почты)
+- GitHub: lowercase email + `allowDangerousEmailAccountLinking` (MVP; в проде нужна своя верификация почты — закроем в М5)
 
 `AUTH_SECRET` / `AUTH_GITHUB_*` — в `.env.example`. Открывать `localhost`, не `127.0.0.1`.
 
