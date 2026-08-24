@@ -6,6 +6,7 @@ const BOARD_FORM_ERRORS: Record<string, string> = {
   invalid: "Title is required (1–120 characters).",
   column: "Column title is required (1–80 characters).",
   card: "Card title is required (1–200 characters).",
+  conflict: "Someone else updated the board. Try again.",
 };
 
 export function boardFormError(

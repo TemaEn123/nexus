@@ -12,11 +12,15 @@ import { z } from "zod";
  * не даст случайно импортировать это в Client Component.
  */
 
-/** Стабильные коды для ветвления на клиенте; текст `message` можно менять. */
+/**
+ * Стабильные коды для ветвления на клиенте; текст `message` можно менять.
+ * `conflict` — гонка create на unique position. PATCH занятого индекса — 200 (shift), не 409.
+ */
 export type ApiErrorCode =
   | "unauthorized"
   | "validation_error"
   | "not_found"
+  | "conflict"
   | "internal";
 
 type ParseSuccess<T> = { ok: true; data: T };

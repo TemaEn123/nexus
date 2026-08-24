@@ -9,6 +9,7 @@ import {
   idSchema,
 } from "@/features/board/schemas";
 import {
+  ConflictError,
   createBoard,
   createCard,
   createColumn,
@@ -94,6 +95,9 @@ export async function createColumnAction(formData: FormData) {
     if (error instanceof NotFoundError) {
       notFound();
     }
+    if (error instanceof ConflictError) {
+      redirect(`/dashboard/${boardId.data}?error=conflict`);
+    }
     throw error;
   }
 
@@ -146,6 +150,9 @@ export async function createCardAction(formData: FormData) {
   } catch (error) {
     if (error instanceof NotFoundError) {
       notFound();
+    }
+    if (error instanceof ConflictError) {
+      redirect(`/dashboard/${boardId.data}?error=conflict`);
     }
     throw error;
   }

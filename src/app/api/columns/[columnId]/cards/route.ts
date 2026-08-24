@@ -4,7 +4,8 @@ import { jsonOk, parseBody, parseIdParam } from "@/server/api-response";
 import { requireApiUser } from "@/server/require-api-user";
 
 /**
- * Создать карточку в колонке. `columnId` только из URL.
+ * Создать карточку в колонке. `columnId` только из URL, `position` в body нет
+ * (`strictObject` + max+1 в service). Гонка unique → 409.
  * Список карточек отдаёт `GET /api/boards/:boardId`.
  */
 

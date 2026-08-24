@@ -98,7 +98,7 @@ model Column {
   board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards Card[]
 
-  @@index([boardId, position])
+  @@unique([boardId, position])
 }
 
 model Card {
@@ -113,7 +113,7 @@ model Card {
   column     Column        @relation(fields: [columnId], references: [id], onDelete: Cascade)
   activities ActivityLog[]
 
-  @@index([columnId, position])
+  @@unique([columnId, position])
 }
 
 model ActivityLog {

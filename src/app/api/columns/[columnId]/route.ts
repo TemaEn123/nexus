@@ -9,6 +9,8 @@ import { requireApiUser } from "@/server/require-api-user";
 
 /**
  * Колонка по своему id: PATCH/DELETE без длинного `/boards/:id/columns/:id`.
+ * `position` — целевой индекс на доске; занятый слот → shift (200), не 409.
+ * Больше числа колонок — в конец.
  */
 
 export async function PATCH(

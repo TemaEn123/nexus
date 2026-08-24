@@ -24,18 +24,24 @@ export const createBoardSchema = z.strictObject({
 /** Пока PATCH доски умеет только title — та же форма, что create. */
 export const updateBoardSchema = createBoardSchema;
 
+/**
+ * Целевой индекс в списке после move (`0..n−1`), не «запиши этот слот как есть».
+ * Дробное / отрицательное → 400. Больше длины списка service клампит в конец, не 400.
+ */
+const targetPositionSchema = z.number().int().min(0);
+
 export const createColumnSchema = z.strictObject({
   title: z.string().trim().min(1).max(80),
 });
 
 /**
  * Частичный апдейт: хотя бы одно поле.
- * `position` — целое ≥ 0 (задел под reorder в М2).
+ * `position` — куда поставить колонку; занятый индекс service раздвигает.
  */
 export const updateColumnSchema = z
   .strictObject({
     title: z.string().trim().min(1).max(80).optional(),
-    position: z.number().int().min(0).optional(),
+    position: targetPositionSchema.optional(),
   })
   .refine(
     (value) => value.title !== undefined || value.position !== undefined,
@@ -53,12 +59,13 @@ export const createCardSchema = z.strictObject({
 /**
  * `description: null` — очистить поле в БД.
  * `columnId` — перенос в другую колонку той же доски (проверка в service).
+ * `position` — целевой индекс; без `position` при смене колонки — в конец.
  */
 export const updateCardSchema = z
   .strictObject({
     title: z.string().trim().min(1).max(200).optional(),
     description: z.string().trim().max(5000).nullable().optional(),
-    position: z.number().int().min(0).optional(),
+    position: targetPositionSchema.optional(),
     columnId: idSchema.optional(),
   })
   .refine(

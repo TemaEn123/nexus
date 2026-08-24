@@ -5,6 +5,7 @@ import { requireApiUser } from "@/server/require-api-user";
 
 /**
  * Создать колонку на доске. `boardId` только из URL, не из body.
+ * `position` не принимаем — в конец (`max+1`). Гонка unique → 409.
  * Список колонок отдаёт `GET /api/boards/:boardId`.
  */
 

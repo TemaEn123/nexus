@@ -8,7 +8,9 @@ import { jsonOk, parseBody, parseIdParam } from "@/server/api-response";
 import { requireApiUser } from "@/server/require-api-user";
 
 /**
- * Карточка по своему id: PATCH (в т.ч. перенос) и DELETE.
+ * Карточка по своему id: PATCH (title / description / перенос) и DELETE.
+ * `position` — целевой индекс в колонке; занятый слот → shift (200), не 409.
+ * Индекс больше длины списка — в конец. `columnId` другой своей доски → 404.
  */
 
 export async function PATCH(
