@@ -18,7 +18,7 @@ export default function DashboardLayout({
 }: LayoutProps<"/dashboard">) {
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
+      <header className="shrink-0 border-b border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto flex h-14 w-full max-w-2xl items-center justify-between px-4">
           <Link
             className="text-sm font-medium text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-50"
@@ -31,7 +31,7 @@ export default function DashboardLayout({
           </Suspense>
         </div>
       </header>
-      {children}
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </div>
   );
 }

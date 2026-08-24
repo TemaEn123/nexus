@@ -2,10 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import { createBoardSchema, idSchema } from "@/features/board/schemas";
+import {
+  createBoardSchema,
+  createCardSchema,
+  createColumnSchema,
+  idSchema,
+} from "@/features/board/schemas";
 import {
   createBoard,
+  createCard,
+  createColumn,
   deleteBoard,
+  deleteCard,
+  deleteColumn,
   NotFoundError,
 } from "@/features/board/service";
 import { requireUser } from "@/server/require-user";
@@ -55,4 +64,113 @@ export async function deleteBoardAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   redirect("/dashboard");
+}
+
+function refreshBoard(boardId: string): never {
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/${boardId}`);
+  redirect(`/dashboard/${boardId}`);
+}
+
+export async function createColumnAction(formData: FormData) {
+  const user = await requireUser();
+
+  const boardId = idSchema.safeParse(formData.get("boardId"));
+  if (!boardId.success) {
+    notFound();
+  }
+
+  const parsed = createColumnSchema.safeParse({
+    title: formData.get("title"),
+  });
+
+  if (!parsed.success) {
+    redirect(`/dashboard/${boardId.data}?error=column`);
+  }
+
+  try {
+    await createColumn(user.id, boardId.data, parsed.data.title);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      notFound();
+    }
+    throw error;
+  }
+
+  refreshBoard(boardId.data);
+}
+
+export async function deleteColumnAction(formData: FormData) {
+  const user = await requireUser();
+
+  const boardId = idSchema.safeParse(formData.get("boardId"));
+  const columnId = idSchema.safeParse(formData.get("columnId"));
+
+  if (!boardId.success || !columnId.success) {
+    notFound();
+  }
+
+  try {
+    await deleteColumn(user.id, columnId.data);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      notFound();
+    }
+    throw error;
+  }
+
+  refreshBoard(boardId.data);
+}
+
+export async function createCardAction(formData: FormData) {
+  const user = await requireUser();
+
+  const boardId = idSchema.safeParse(formData.get("boardId"));
+  const columnId = idSchema.safeParse(formData.get("columnId"));
+
+  if (!boardId.success || !columnId.success) {
+    notFound();
+  }
+
+  const parsed = createCardSchema.safeParse({
+    title: formData.get("title"),
+    description: formData.get("description") || undefined,
+  });
+
+  if (!parsed.success) {
+    redirect(`/dashboard/${boardId.data}?error=card`);
+  }
+
+  try {
+    await createCard(user.id, columnId.data, parsed.data);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      notFound();
+    }
+    throw error;
+  }
+
+  refreshBoard(boardId.data);
+}
+
+export async function deleteCardAction(formData: FormData) {
+  const user = await requireUser();
+
+  const boardId = idSchema.safeParse(formData.get("boardId"));
+  const cardId = idSchema.safeParse(formData.get("cardId"));
+
+  if (!boardId.success || !cardId.success) {
+    notFound();
+  }
+
+  try {
+    await deleteCard(user.id, cardId.data);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      notFound();
+    }
+    throw error;
+  }
+
+  refreshBoard(boardId.data);
 }

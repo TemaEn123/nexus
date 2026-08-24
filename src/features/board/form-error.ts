@@ -1,9 +1,11 @@
 /**
- * Коды, которые `createBoardAction` кладёт в `?error=` после redirect.
+ * Коды, которые board actions кладут в `?error=` после redirect.
  * Неизвестные коды → общее сообщение, без Zod/Prisma.
  */
 const BOARD_FORM_ERRORS: Record<string, string> = {
   invalid: "Title is required (1–120 characters).",
+  column: "Column title is required (1–80 characters).",
+  card: "Card title is required (1–200 characters).",
 };
 
 export function boardFormError(

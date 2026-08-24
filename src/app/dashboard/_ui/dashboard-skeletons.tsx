@@ -12,19 +12,24 @@ export function UserMenuSkeleton() {
   );
 }
 
-/** Заглушка `/dashboard/[boardId]`: заголовок, не список досок. */
+/** Канбан `/dashboard/[boardId]`: три колонки, не список досок. */
 export function BoardPageSkeleton() {
   return (
     <main
       aria-busy="true"
       aria-live="polite"
-      className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-16"
+      className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 px-4 py-6"
     >
       <span className="sr-only">Loading</span>
       <div className="h-4 w-32 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-      <div>
-        <div className="h-8 w-48 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-        <div className="mt-2 h-5 w-56 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+      <div className="h-8 w-48 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+      <div className="flex min-h-0 flex-1 flex-nowrap gap-4 overflow-x-auto overflow-y-hidden pb-2">
+        {["a", "b", "c"].map((key) => (
+          <div
+            className="h-full min-h-64 w-72 shrink-0 animate-pulse rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900"
+            key={key}
+          />
+        ))}
       </div>
     </main>
   );
