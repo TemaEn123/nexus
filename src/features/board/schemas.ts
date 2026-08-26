@@ -77,9 +77,21 @@ export const updateCardSchema = z
     { error: "At least one field is required" },
   );
 
+/**
+ * DnD drop: оба поля обязательны. `boardId` только для revalidate, не для владения.
+ * Арифметику слотов сюда не кладём — её делает `updateCard`.
+ */
+export const moveCardSchema = z.strictObject({
+  cardId: idSchema,
+  boardId: idSchema,
+  columnId: idSchema,
+  position: targetPositionSchema,
+});
+
 export type CreateBoard = z.infer<typeof createBoardSchema>;
 export type UpdateBoard = z.infer<typeof updateBoardSchema>;
 export type CreateColumn = z.infer<typeof createColumnSchema>;
 export type UpdateColumn = z.infer<typeof updateColumnSchema>;
 export type CreateCard = z.infer<typeof createCardSchema>;
 export type UpdateCard = z.infer<typeof updateCardSchema>;
+export type MoveCard = z.infer<typeof moveCardSchema>;

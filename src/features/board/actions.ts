@@ -7,6 +7,7 @@ import {
   createCardSchema,
   createColumnSchema,
   idSchema,
+  moveCardSchema,
 } from "@/features/board/schemas";
 import {
   ConflictError,
@@ -17,6 +18,7 @@ import {
   deleteCard,
   deleteColumn,
   NotFoundError,
+  updateCard,
 } from "@/features/board/service";
 import { requireUser } from "@/server/require-user";
 
@@ -26,7 +28,12 @@ import { requireUser } from "@/server/require-user";
  *
  * `redirect` / `notFound` бросают (так Next.js делает навигацию).
  * Их нельзя глотать: снаружи try, либо после узкого `catch` как в auth.
+ * DnD (`moveCardAction`) не редиректит: клиенту нужен `{ ok }` и фокус.
  */
+
+export type MoveCardResult =
+  | { ok: true }
+  | { ok: false; error: "conflict" | "not-found" | "invalid" };
 
 export async function createBoardAction(formData: FormData) {
   const user = await requireUser();
@@ -180,4 +187,36 @@ export async function deleteCardAction(formData: FormData) {
   }
 
   refreshBoard(boardId.data);
+}
+
+/**
+ * Перенос карточки после drop. UI шлёт целевой индекс; shift — в service.
+ * Без `redirect` / `notFound`: иначе drag сбросит фокус и вспыхнёт страница.
+ */
+export async function moveCardAction(input: unknown): Promise<MoveCardResult> {
+  const user = await requireUser();
+
+  const parsed = moveCardSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "invalid" };
+  }
+
+  try {
+    await updateCard(user.id, parsed.data.cardId, {
+      columnId: parsed.data.columnId,
+      position: parsed.data.position,
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return { ok: false, error: "not-found" };
+    }
+    if (error instanceof ConflictError) {
+      return { ok: false, error: "conflict" };
+    }
+    throw error;
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/${parsed.data.boardId}`);
+  return { ok: true };
 }
