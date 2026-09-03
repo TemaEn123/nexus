@@ -2,19 +2,22 @@
 
 import { useFormStatus } from "react-dom";
 
-/** Кнопка внутри формы delete: confirm, затем submit. `pending` — только эта форма. */
+/** Кнопка delete: confirm, затем submit. `pending` снаружи (Query) или `useFormStatus`. */
 export function ConfirmSubmit({
   className,
   confirmMessage,
   idleLabel,
   pendingLabel,
+  pending: pendingProp,
 }: {
   className: string;
   confirmMessage: string;
   idleLabel: string;
   pendingLabel: string;
+  pending?: boolean;
 }) {
-  const { pending } = useFormStatus();
+  const { pending: formPending } = useFormStatus();
+  const pending = pendingProp ?? formPending;
 
   return (
     <button
