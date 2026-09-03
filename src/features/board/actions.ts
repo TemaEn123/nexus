@@ -8,6 +8,7 @@ import {
   createColumnSchema,
   idSchema,
   moveCardSchema,
+  updateCardContentSchema,
 } from "@/features/board/schemas";
 import {
   ConflictError,
@@ -20,7 +21,9 @@ import {
   NotFoundError,
   updateCard,
 } from "@/features/board/service";
+import type { BoardCard } from "@/features/board/types";
 import { requireUser } from "@/server/require-user";
+import { toCardDto } from "@/shared/api/board";
 
 /**
  * Server Actions дашборда. Формы зовут эти функции, не `/api/boards`.
@@ -28,12 +31,23 @@ import { requireUser } from "@/server/require-user";
  *
  * `redirect` / `notFound` бросают (так Next.js делает навигацию).
  * Их нельзя глотать: снаружи try, либо после узкого `catch` как в auth.
- * DnD (`moveCardAction`) не редиректит: клиенту нужен `{ ok }` и фокус.
+ * Карточки (create/update/delete) и DnD (`moveCardAction`) не редиректят:
+ * клиенту нужен `{ ok }` для optimistic UI, без вспышки страницы.
  */
+
+export type BoardActionError = "conflict" | "not-found" | "invalid";
 
 export type MoveCardResult =
   | { ok: true }
-  | { ok: false; error: "conflict" | "not-found" | "invalid" };
+  | { ok: false; error: BoardActionError };
+
+export type CardWriteResult =
+  | { ok: true; card: BoardCard }
+  | { ok: false; error: BoardActionError };
+
+export type DeleteCardResult =
+  | { ok: true }
+  | { ok: false; error: BoardActionError };
 
 export async function createBoardAction(formData: FormData) {
   const user = await requireUser();
@@ -74,9 +88,13 @@ export async function deleteBoardAction(formData: FormData) {
   redirect("/dashboard");
 }
 
-function refreshBoard(boardId: string): never {
+function revalidateBoard(boardId: string) {
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/${boardId}`);
+}
+
+function refreshBoard(boardId: string): never {
+  revalidateBoard(boardId);
   redirect(`/dashboard/${boardId}`);
 }
 
@@ -133,14 +151,16 @@ export async function deleteColumnAction(formData: FormData) {
   refreshBoard(boardId.data);
 }
 
-export async function createCardAction(formData: FormData) {
+export async function createCardAction(
+  formData: FormData,
+): Promise<CardWriteResult> {
   const user = await requireUser();
 
   const boardId = idSchema.safeParse(formData.get("boardId"));
   const columnId = idSchema.safeParse(formData.get("columnId"));
 
   if (!boardId.success || !columnId.success) {
-    notFound();
+    return { ok: false, error: "invalid" };
   }
 
   const parsed = createCardSchema.safeParse({
@@ -149,44 +169,78 @@ export async function createCardAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(`/dashboard/${boardId.data}?error=card`);
+    return { ok: false, error: "invalid" };
   }
 
   try {
-    await createCard(user.id, columnId.data, parsed.data);
+    const card = await createCard(user.id, columnId.data, parsed.data);
+    revalidateBoard(boardId.data);
+    return { ok: true, card: toCardDto(card) };
   } catch (error) {
     if (error instanceof NotFoundError) {
-      notFound();
+      return { ok: false, error: "not-found" };
     }
     if (error instanceof ConflictError) {
-      redirect(`/dashboard/${boardId.data}?error=conflict`);
+      return { ok: false, error: "conflict" };
     }
     throw error;
   }
-
-  refreshBoard(boardId.data);
 }
 
-export async function deleteCardAction(formData: FormData) {
+export async function updateCardAction(
+  input: unknown,
+): Promise<CardWriteResult> {
+  const user = await requireUser();
+
+  const parsed = updateCardContentSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "invalid" };
+  }
+
+  try {
+    const card = await updateCard(user.id, parsed.data.cardId, {
+      title: parsed.data.title,
+      description: parsed.data.description,
+    });
+    revalidateBoard(parsed.data.boardId);
+    return { ok: true, card: toCardDto(card) };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return { ok: false, error: "not-found" };
+    }
+    if (error instanceof ConflictError) {
+      return { ok: false, error: "conflict" };
+    }
+    throw error;
+  }
+}
+
+export async function deleteCardAction(
+  formData: FormData,
+): Promise<DeleteCardResult> {
   const user = await requireUser();
 
   const boardId = idSchema.safeParse(formData.get("boardId"));
   const cardId = idSchema.safeParse(formData.get("cardId"));
 
   if (!boardId.success || !cardId.success) {
-    notFound();
+    return { ok: false, error: "invalid" };
   }
 
   try {
     await deleteCard(user.id, cardId.data);
   } catch (error) {
     if (error instanceof NotFoundError) {
-      notFound();
+      return { ok: false, error: "not-found" };
+    }
+    if (error instanceof ConflictError) {
+      return { ok: false, error: "conflict" };
     }
     throw error;
   }
 
-  refreshBoard(boardId.data);
+  revalidateBoard(boardId.data);
+  return { ok: true };
 }
 
 /**
@@ -216,7 +270,6 @@ export async function moveCardAction(input: unknown): Promise<MoveCardResult> {
     throw error;
   }
 
-  revalidatePath("/dashboard");
-  revalidatePath(`/dashboard/${parsed.data.boardId}`);
+  revalidateBoard(parsed.data.boardId);
   return { ok: true };
 }

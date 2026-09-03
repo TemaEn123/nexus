@@ -1,10 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { boardFormError, mutationFormError } from "@/features/board/form-error";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
+import { createCardAction } from "@/features/board/actions";
+import {
+  commitBoardQuery,
+  commitCreatedCard,
+} from "@/features/board/commit-board-query";
+import { cardActionError } from "@/features/board/form-error";
 import { PendingSubmit } from "@/features/board/pending-submit";
 import { createCardSchema } from "@/features/board/schemas";
-import { useCreateCardMutation } from "@/features/board/use-board-mutations";
+import { createTempId } from "@/features/board/temp-id";
+import { useApplyBoardOptimistic } from "@/features/board/use-board-optimistic";
+import { toCardDto } from "@/shared/api/board";
 
 const fieldClass =
   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
@@ -13,7 +22,7 @@ const buttonClass =
 const errorClass =
   "rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-200";
 
-/** `position` не шлём — service ставит max+1. Optimistic — temp id, потом cuid с 201. */
+/** `position` не шлём — service ставит max+1. Optimistic — temp id, потом cuid из action. */
 export function CreateCardForm({
   boardId,
   columnId,
@@ -21,19 +30,17 @@ export function CreateCardForm({
   boardId: string;
   columnId: string;
 }) {
-  const createCard = useCreateCardMutation(boardId);
+  const applyOptimistic = useApplyBoardOptimistic();
+  const queryClient = useQueryClient();
+  const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string>();
 
   return (
     <form
-      className="flex flex-col gap-2 px-3 pb-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        const form = event.currentTarget;
-        const data = new FormData(form);
-        const description = data.get("description");
+      action={async (formData) => {
+        const description = formData.get("description");
         const parsed = createCardSchema.safeParse({
-          title: data.get("title"),
+          title: formData.get("title"),
           description:
             typeof description === "string" && description.trim().length > 0
               ? description
@@ -41,33 +48,69 @@ export function CreateCardForm({
         });
 
         if (!parsed.success) {
-          setError(
-            boardFormError("card") ??
-              "Card title is required (1–200 characters).",
-          );
+          setError(cardActionError("card"));
           return;
         }
 
         setError(undefined);
-        createCard.mutate(
-          { columnId, ...parsed.data },
-          {
-            onSuccess: () => {
-              form.reset();
-            },
-            onError: (cause) => {
-              setError(mutationFormError(cause));
-            },
-          },
+
+        const tempId = createTempId();
+        applyOptimistic({
+          type: "add",
+          columnId,
+          card: toCardDto({
+            id: tempId,
+            title: parsed.data.title,
+            description: parsed.data.description ?? null,
+            position: 0,
+            columnId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }),
+        });
+
+        const result = await createCardAction(formData);
+
+        if (!result.ok) {
+          setError(cardActionError(result.error));
+          return;
+        }
+
+        await commitBoardQuery(queryClient, boardId, (current) =>
+          commitCreatedCard(current, columnId, tempId, result.card),
         );
+        formRef.current?.reset();
       }}
+      className="flex flex-col gap-2 px-3 pb-3"
+      ref={formRef}
     >
-      {error ? <p className={errorClass}>{error}</p> : null}
+      <input name="boardId" type="hidden" value={boardId} />
+      <input name="columnId" type="hidden" value={columnId} />
+      {error ? (
+        <p className={errorClass} role="alert">
+          {error}
+        </p>
+      ) : null}
+      <CreateCardFields />
+      <PendingSubmit
+        className={buttonClass}
+        idleLabel="Add card"
+        pendingLabel="Adding…"
+      />
+    </form>
+  );
+}
+
+function CreateCardFields() {
+  const { pending } = useFormStatus();
+
+  return (
+    <>
       <label className="flex flex-col gap-1 text-sm font-medium">
         New card
         <input
           className={fieldClass}
-          disabled={createCard.isPending}
+          disabled={pending}
           maxLength={200}
           name="title"
           placeholder="Title"
@@ -79,19 +122,13 @@ export function CreateCardForm({
         Description
         <textarea
           className={fieldClass}
-          disabled={createCard.isPending}
+          disabled={pending}
           maxLength={5000}
           name="description"
           placeholder="Optional"
           rows={2}
         />
       </label>
-      <PendingSubmit
-        className={buttonClass}
-        idleLabel="Add card"
-        pending={createCard.isPending}
-        pendingLabel="Adding…"
-      />
-    </form>
+    </>
   );
 }

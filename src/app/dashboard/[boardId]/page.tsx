@@ -46,7 +46,10 @@ export default async function BoardPage({
   const { boardId } = await params;
   const board = await loadBoard(boardId);
   const query = await searchParams;
-  const formError = boardFormError(query.error);
+  // Карточки показывают ошибку у формы, не в `?error=card`.
+  const errorCode = Array.isArray(query.error) ? query.error[0] : query.error;
+  const formError =
+    errorCode === "card" ? undefined : boardFormError(query.error);
 
   const queryClient = makeQueryClient();
   queryClient.setQueryData(boardKeys.detail(board.id), toBoardDto(board));

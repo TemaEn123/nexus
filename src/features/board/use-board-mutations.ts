@@ -6,13 +6,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { createTempId } from "@/features/board/temp-id";
-import type { BoardCard, BoardDetail } from "@/features/board/types";
-import {
-  createCard,
-  createColumn,
-  deleteCard,
-  deleteColumn,
-} from "@/shared/api/board";
+import type { BoardDetail } from "@/features/board/types";
+import { createColumn, deleteColumn } from "@/shared/api/board";
 import { boardKeys } from "@/shared/api/query-keys";
 
 type BoardQueryKey = ReturnType<typeof boardKeys.detail>;
@@ -30,88 +25,6 @@ function restoreSnapshot(
   if (previous) {
     queryClient.setQueryData(queryKey, previous);
   }
-}
-
-export function useCreateCardMutation(boardId: string) {
-  const queryClient = useQueryClient();
-  const queryKey = boardKeys.detail(boardId);
-
-  return useMutation({
-    mutationFn: ({
-      columnId,
-      title,
-      description,
-    }: {
-      columnId: string;
-      title: string;
-      description?: string;
-    }) => createCard({ columnId, title, description }),
-    onMutate: async ({ columnId, title, description }) => {
-      const tempId = createTempId();
-      const previous = await takeSnapshot(queryClient, queryKey);
-      queryClient.setQueryData<BoardDetail>(queryKey, (current) => {
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          columns: current.columns.map((column) => {
-            if (column.id !== columnId) {
-              return column;
-            }
-
-            const card: BoardCard = {
-              id: tempId,
-              title,
-              description: description ?? null,
-              position: column.cards.length,
-              columnId,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            };
-
-            return { ...column, cards: [...column.cards, card] };
-          }),
-        };
-      });
-      return { previous, tempId };
-    },
-    onError: (_error, _variables, context) => {
-      restoreSnapshot(queryClient, queryKey, context?.previous);
-    },
-    onSuccess: (card, { columnId }, context) => {
-      const tempId = context?.tempId;
-      if (!tempId) {
-        return;
-      }
-
-      queryClient.setQueryData<BoardDetail>(queryKey, (current) => {
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          columns: current.columns.map((column) => {
-            if (column.id !== columnId) {
-              return column;
-            }
-
-            return {
-              ...column,
-              cards: column.cards.map((item) =>
-                item.id === tempId ? card : item,
-              ),
-            };
-          }),
-        };
-      });
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey });
-    },
-  });
 }
 
 export function useCreateColumnMutation(boardId: string) {
@@ -168,38 +81,6 @@ export function useCreateColumnMutation(boardId: string) {
           ),
         };
       });
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey });
-    },
-  });
-}
-
-export function useDeleteCardMutation(boardId: string) {
-  const queryClient = useQueryClient();
-  const queryKey = boardKeys.detail(boardId);
-
-  return useMutation({
-    mutationFn: ({ cardId }: { cardId: string }) => deleteCard(cardId),
-    onMutate: async ({ cardId }) => {
-      const previous = await takeSnapshot(queryClient, queryKey);
-      queryClient.setQueryData<BoardDetail>(queryKey, (current) => {
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          columns: current.columns.map((column) => ({
-            ...column,
-            cards: column.cards.filter((card) => card.id !== cardId),
-          })),
-        };
-      });
-      return { previous };
-    },
-    onError: (_error, _variables, context) => {
-      restoreSnapshot(queryClient, queryKey, context?.previous);
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey });

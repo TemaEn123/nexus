@@ -63,7 +63,11 @@ export function KanbanColumn({
           </form>
         )}
       </div>
-      {error ? <p className={`${errorClass} px-4`}>{error}</p> : null}
+      {error ? (
+        <p className={`${errorClass} px-4`} role="alert">
+          {error}
+        </p>
+      ) : null}
       <div
         className={`min-h-0 flex-1 overflow-y-auto ${isDropTarget ? "bg-zinc-100 dark:bg-zinc-900" : ""}`}
         ref={ref}
@@ -81,6 +85,7 @@ export function KanbanColumn({
               columnId={column.id}
               index={index}
               key={card.id}
+              onError={setError}
             />
           ))}
         </ul>

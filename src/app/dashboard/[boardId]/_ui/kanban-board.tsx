@@ -3,10 +3,14 @@
 import { move } from "@dnd-kit/helpers";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CreateColumnForm } from "@/features/board/create-column-form";
 import { boardFormError } from "@/features/board/form-error";
 import type { BoardCard, BoardColumn } from "@/features/board/types";
+import {
+  BoardOptimisticProvider,
+  useBoardOptimistic,
+} from "@/features/board/use-board-optimistic";
 import { useBoardQuery } from "@/features/board/use-board-query";
 import { useMoveCardMutation } from "@/features/board/use-move-card";
 import { ApiClientError } from "@/shared/api/http";
@@ -20,48 +24,36 @@ const errorClass =
 /**
  * Канбан: колонки из Query (hydrate с RSC). Форма новой колонки справа.
  * Горизонтальный скролл на любой ширине (не стопка). Карточки — overflow-y внутри колонки.
- * Порядок во время drag — только локальный state; Query в UI не пишем, пока жест живой.
+ * Карточки CUD — `useOptimistic` поверх Query; список вне drag оттуда же,
+ * без копии в useState (иначе эффект + новый массив с каждого render → цикл).
+ * Порядок во время drag — локальный state; Query в UI не пишем, пока жест живой.
  * Persist: snapshot vs текущий список (`cardLocation`), не `initialGroup`.
  */
 export function KanbanBoard({ boardId }: { boardId: string }) {
   const draggingRef = useRef(false);
-  const [dragging, setDragging] = useState(false);
   const queryClient = useQueryClient();
   const {
     data: board,
     isError,
     isPending,
   } = useBoardQuery(boardId, draggingRef);
+  const [optimisticBoard, applyOptimistic] = useBoardOptimistic(board);
   const moveCard = useMoveCardMutation(boardId);
-  const serverColumns = board?.columns ?? [];
-  const [columns, setColumns] = useState(serverColumns);
+  const sourceColumns = optimisticBoard?.columns ?? [];
+  const [dragColumns, setDragColumns] = useState<BoardColumn[] | null>(null);
   const [moveError, setMoveError] = useState<string>();
+  const columns = dragColumns ?? sourceColumns;
   const columnsRef = useRef(columns);
-  const snapshotRef = useRef(serverColumns);
+  const snapshotRef = useRef(sourceColumns);
 
   columnsRef.current = columns;
 
   const [plugins] = useState(() => kanbanPlugins(() => columnsRef.current));
 
-  function finishDrag(restore?: BoardColumn[]) {
+  function finishDrag() {
     draggingRef.current = false;
-    if (restore) {
-      setColumns(restore);
-    }
-    setDragging(false);
+    setDragColumns(null);
   }
-
-  const serverKey = orderKey(serverColumns);
-
-  useEffect(() => {
-    if (dragging) {
-      return;
-    }
-
-    setColumns((current) =>
-      orderKey(current) === serverKey ? current : serverColumns,
-    );
-  }, [dragging, serverColumns, serverKey]);
 
   if (!board) {
     if (isError) {
@@ -76,75 +68,78 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      {moveError ? <p className={errorClass}>{moveError}</p> : null}
-      <DragDropProvider
-        plugins={plugins}
-        sensors={kanbanSensors}
-        onDragEnd={async (event) => {
-          if (event.canceled) {
-            finishDrag(snapshotRef.current);
-            return;
-          }
+    <BoardOptimisticProvider apply={applyOptimistic}>
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        {moveError ? <p className={errorClass}>{moveError}</p> : null}
+        <DragDropProvider
+          plugins={plugins}
+          sensors={kanbanSensors}
+          onDragEnd={async (event) => {
+            if (event.canceled) {
+              finishDrag();
+              return;
+            }
 
-          const cardId = event.operation.source?.id;
-          if (typeof cardId !== "string") {
-            finishDrag(snapshotRef.current);
-            return;
-          }
+            const cardId = event.operation.source?.id;
+            if (typeof cardId !== "string") {
+              finishDrag();
+              return;
+            }
 
-          const from = cardLocation(snapshotRef.current, cardId);
-          const to = cardLocation(columnsRef.current, cardId);
-          if (!from || !to) {
-            finishDrag(snapshotRef.current);
-            return;
-          }
+            const from = cardLocation(snapshotRef.current, cardId);
+            const to = cardLocation(columnsRef.current, cardId);
+            if (!from || !to) {
+              finishDrag();
+              return;
+            }
 
-          if (from.columnId === to.columnId && from.index === to.index) {
-            finishDrag();
-            return;
-          }
+            if (from.columnId === to.columnId && from.index === to.index) {
+              finishDrag();
+              return;
+            }
 
-          try {
-            await moveCard.mutateAsync({
-              cardId,
-              columnId: to.columnId,
-              position: to.index,
-              columns: columnsRef.current,
+            try {
+              await moveCard.mutateAsync({
+                cardId,
+                columnId: to.columnId,
+                position: to.index,
+                columns: columnsRef.current,
+              });
+              finishDrag();
+            } catch (error) {
+              finishDrag();
+              setMoveError(
+                error instanceof ApiClientError && error.code === "conflict"
+                  ? boardFormError("conflict")
+                  : "Something went wrong. Try again.",
+              );
+            }
+          }}
+          onDragOver={(event) => {
+            setDragColumns((current) => {
+              const base = current ?? sourceColumns;
+              return withMovedCards(base, move(cardsByColumn(base), event));
             });
-            finishDrag();
-          } catch (error) {
-            finishDrag(snapshotRef.current);
-            setMoveError(
-              error instanceof ApiClientError && error.code === "conflict"
-                ? boardFormError("conflict")
-                : "Something went wrong. Try again.",
-            );
-          }
-        }}
-        onDragOver={(event) => {
-          setColumns((current) =>
-            withMovedCards(current, move(cardsByColumn(current), event)),
-          );
-        }}
-        onDragStart={() => {
-          draggingRef.current = true;
-          setDragging(true);
-          snapshotRef.current = columnsRef.current;
-          setMoveError(undefined);
-          void queryClient.cancelQueries({
-            queryKey: boardKeys.detail(boardId),
-          });
-        }}
-      >
-        <div className="flex min-h-0 flex-1 flex-nowrap items-stretch gap-4 overflow-x-auto overflow-y-hidden pb-2">
-          {columns.map((column) => (
-            <KanbanColumn boardId={boardId} column={column} key={column.id} />
-          ))}
-          <CreateColumnForm boardId={boardId} />
-        </div>
-      </DragDropProvider>
-    </div>
+          }}
+          onDragStart={() => {
+            draggingRef.current = true;
+            snapshotRef.current = columnsRef.current;
+            setDragColumns(columnsRef.current);
+            setMoveError(undefined);
+            void queryClient.cancelQueries({
+              queryKey: boardKeys.detail(boardId),
+            });
+          }}
+        >
+          <div className="flex min-h-0 flex-1 flex-nowrap items-stretch gap-4 overflow-x-auto overflow-y-hidden pb-2">
+            {columns.map((column) => (
+              <KanbanColumn boardId={boardId} column={column} key={column.id} />
+            ))}
+            <CreateColumnForm boardId={boardId} />
+          </div>
+        </DragDropProvider>
+      </div>
+    </BoardOptimisticProvider>
   );
 }
 
@@ -164,15 +159,6 @@ function KanbanPending() {
       ))}
     </div>
   );
-}
-
-function orderKey(columns: BoardColumn[]) {
-  return columns
-    .map(
-      (column) =>
-        `${column.id}:${column.cards.map((card) => card.id).join(",")}`,
-    )
-    .join("|");
 }
 
 function cardLocation(columns: BoardColumn[], cardId: string) {

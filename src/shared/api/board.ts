@@ -10,6 +10,10 @@ export function toBoardDto(board: BoardDetail): BoardDetail {
   return JSON.parse(JSON.stringify(board)) as BoardDetail;
 }
 
+export function toCardDto(card: BoardCard): BoardCard {
+  return JSON.parse(JSON.stringify(card)) as BoardCard;
+}
+
 export function fetchBoard(boardId: string) {
   return getJson<BoardDetail>(`/api/boards/${encodeURIComponent(boardId)}`);
 }
@@ -29,31 +33,11 @@ export function moveCard(input: {
   );
 }
 
-export function createCard(input: {
-  columnId: string;
-  title: string;
-  description?: string;
-}) {
-  const body: { title: string; description?: string } = { title: input.title };
-  if (input.description) {
-    body.description = input.description;
-  }
-
-  return postJson<BoardCard>(
-    `/api/columns/${encodeURIComponent(input.columnId)}/cards`,
-    body,
-  );
-}
-
 export function createColumn(input: { boardId: string; title: string }) {
   return postJson<Omit<BoardColumn, "cards">>(
     `/api/boards/${encodeURIComponent(input.boardId)}/columns`,
     { title: input.title },
   );
-}
-
-export function deleteCard(cardId: string) {
-  return deleteJson<{ id: string }>(`/api/cards/${encodeURIComponent(cardId)}`);
 }
 
 export function deleteColumn(columnId: string) {

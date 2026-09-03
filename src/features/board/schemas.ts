@@ -78,6 +78,22 @@ export const updateCardSchema = z
   );
 
 /**
+ * Правка текста с клиента (не DnD). `boardId` только для revalidate.
+ * `columnId` / `position` сюда не принимаем — их шлёт `moveCardAction`.
+ */
+export const updateCardContentSchema = z
+  .strictObject({
+    cardId: idSchema,
+    boardId: idSchema,
+    title: z.string().trim().min(1).max(200).optional(),
+    description: z.string().trim().max(5000).nullable().optional(),
+  })
+  .refine(
+    (value) => value.title !== undefined || value.description !== undefined,
+    { error: "At least one field is required" },
+  );
+
+/**
  * DnD drop: оба поля обязательны. `boardId` только для revalidate, не для владения.
  * Арифметику слотов сюда не кладём — её делает `updateCard`.
  */
@@ -94,4 +110,5 @@ export type CreateColumn = z.infer<typeof createColumnSchema>;
 export type UpdateColumn = z.infer<typeof updateColumnSchema>;
 export type CreateCard = z.infer<typeof createCardSchema>;
 export type UpdateCard = z.infer<typeof updateCardSchema>;
+export type UpdateCardContent = z.infer<typeof updateCardContentSchema>;
 export type MoveCard = z.infer<typeof moveCardSchema>;
