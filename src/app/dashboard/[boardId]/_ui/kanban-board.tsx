@@ -48,6 +48,8 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
 
   columnsRef.current = columns;
 
+  // dnd-kit сравнивает plugins по ссылке. Один экземпляр на жизнь доски;
+  // не useMemo — initializer и так один раз, компилятор чужой === не видит.
   const [plugins] = useState(() => kanbanPlugins(() => columnsRef.current));
 
   function finishDrag() {
