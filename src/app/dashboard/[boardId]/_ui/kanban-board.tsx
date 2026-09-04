@@ -15,6 +15,7 @@ import { useBoardQuery } from "@/features/board/use-board-query";
 import { useMoveCardMutation } from "@/features/board/use-move-card";
 import { ApiClientError } from "@/shared/api/http";
 import { boardKeys } from "@/shared/api/query-keys";
+import { ColumnsSkeleton } from "../../_ui/dashboard-skeletons";
 import { KanbanColumn } from "./kanban-column";
 import { kanbanPlugins, kanbanSensors } from "./kanban-dnd";
 
@@ -63,7 +64,7 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
     }
 
     if (isPending) {
-      return <KanbanPending />;
+      return <ColumnsSkeleton />;
     }
 
     return null;
@@ -142,24 +143,6 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
         </DragDropProvider>
       </div>
     </BoardOptimisticProvider>
-  );
-}
-
-function KanbanPending() {
-  return (
-    <div
-      aria-busy="true"
-      aria-live="polite"
-      className="flex min-h-0 flex-1 flex-nowrap gap-4 overflow-x-auto overflow-y-hidden pb-2"
-    >
-      <span className="sr-only">Loading</span>
-      {["a", "b", "c"].map((key) => (
-        <div
-          className="h-full min-h-64 w-72 shrink-0 animate-pulse rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900"
-          key={key}
-        />
-      ))}
-    </div>
   );
 }
 

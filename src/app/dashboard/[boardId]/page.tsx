@@ -1,34 +1,14 @@
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { cache } from "react";
-import { boardFormError } from "@/features/board/form-error";
-import { getBoard, NotFoundError } from "@/features/board/service";
-import { requireUser } from "@/server/require-user";
-import { toBoardDto } from "@/shared/api/board";
-import { makeQueryClient } from "@/shared/api/query-client";
-import { boardKeys } from "@/shared/api/query-keys";
-import { KanbanBoard } from "./_ui/kanban-board";
-
-/**
- * Доска с канбаном. `cache`: generateMetadata и page не ходят в Prisma дважды.
- * Чужой или нет id → `notFound()` (тот же 404, что у API), не 403.
- * Канбан гидрируем в Query: RSC уже загрузил доску, клиент не делает GET сразу.
- */
-const loadBoard = cache(async (boardId: string) => {
-  const user = await requireUser();
-
-  try {
-    return await getBoard(user.id, boardId);
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      notFound();
-    }
-
-    throw error;
-  }
-});
+import { Suspense } from "react";
+import {
+  BoardTitleSkeleton,
+  ColumnsSkeleton,
+} from "../_ui/dashboard-skeletons";
+import { BoardFormError } from "./_ui/board-form-error";
+import { BoardHeading } from "./_ui/board-heading";
+import { HydratedKanban } from "./_ui/hydrated-kanban";
+import { loadBoard } from "./load-board";
 
 export async function generateMetadata({
   params,
@@ -39,20 +19,15 @@ export async function generateMetadata({
   return { title: board.title };
 }
 
-export default async function BoardPage({
+/**
+ * Back сразу. Title и канбан ждут один `loadBoard` (cache + metadata).
+ * `?error=` не на критическом пути. notFound — внутри loadBoard.
+ */
+export default function BoardPage({
   params,
   searchParams,
 }: PageProps<"/dashboard/[boardId]">) {
-  const { boardId } = await params;
-  const board = await loadBoard(boardId);
-  const query = await searchParams;
-  // Карточки показывают ошибку у формы, не в `?error=card`.
-  const errorCode = Array.isArray(query.error) ? query.error[0] : query.error;
-  const formError =
-    errorCode === "card" ? undefined : boardFormError(query.error);
-
-  const queryClient = makeQueryClient();
-  queryClient.setQueryData(boardKeys.detail(board.id), toBoardDto(board));
+  const boardPromise = params.then(({ boardId }) => loadBoard(boardId));
 
   return (
     <main className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 px-4 py-6">
@@ -62,17 +37,15 @@ export default async function BoardPage({
       >
         Back to dashboard
       </Link>
-      <h1 className="shrink-0 text-2xl font-semibold tracking-tight">
-        {board.title}
-      </h1>
-      {formError ? (
-        <p className="shrink-0 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
-          {formError}
-        </p>
-      ) : null}
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <KanbanBoard boardId={board.id} />
-      </HydrationBoundary>
+      <Suspense fallback={<BoardTitleSkeleton />}>
+        <BoardHeading boardPromise={boardPromise} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <BoardFormError searchParams={searchParams} />
+      </Suspense>
+      <Suspense fallback={<ColumnsSkeleton />}>
+        <HydratedKanban boardPromise={boardPromise} />
+      </Suspense>
     </main>
   );
 }

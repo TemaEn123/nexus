@@ -2,16 +2,19 @@ import Link from "next/link";
 import { deleteBoardAction } from "@/features/board/actions";
 import { DeleteBoardButton } from "@/features/board/delete-board-button";
 import { listBoards } from "@/features/board/service";
+import { requireUser } from "@/server/require-user";
 
 const deleteButtonClass =
   "shrink-0 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900";
 
 /**
- * Список досок: ссылка на заглушку, delete отдельной формой.
+ * Список досок: ссылка на канбан, delete отдельной формой.
+ * Сессия здесь, не в page — иначе форма Create ждёт auth.
  * Весь `<li>` не оборачиваем в Link — иначе Delete уйдёт на доску.
  */
-export async function BoardList({ userId }: { userId: string }) {
-  const boards = await listBoards(userId);
+export async function BoardList() {
+  const user = await requireUser();
+  const boards = await listBoards(user.id);
 
   return (
     <section className="flex flex-col gap-3">

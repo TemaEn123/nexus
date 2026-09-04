@@ -8,30 +8,22 @@ const buttonClass =
 
 /**
  * Server Component: `action={createBoardAction}`.
- * Ошибка валидации — `?error=` + redirect, как у login/register.
+ * Баннер `?error=` — `CreateBoardError` в Suspense на странице, не здесь.
  */
-export function CreateBoardForm({ error }: { error?: string }) {
+export function CreateBoardForm() {
   return (
-    <div className="flex flex-col gap-4">
-      {error ? (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
-          {error}
-        </p>
-      ) : null}
-
-      <form action={createBoardAction} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Title
-          <input
-            className={fieldClass}
-            maxLength={120}
-            name="title"
-            required
-            type="text"
-          />
-        </label>
-        <CreateBoardSubmit className={buttonClass} />
-      </form>
-    </div>
+    <form action={createBoardAction} className="flex flex-col gap-4">
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        Title
+        <input
+          className={fieldClass}
+          maxLength={120}
+          name="title"
+          required
+          type="text"
+        />
+      </label>
+      <CreateBoardSubmit className={buttonClass} />
+    </form>
   );
 }
