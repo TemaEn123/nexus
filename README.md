@@ -16,7 +16,7 @@ nvm use
 cp .env.example .env
 ```
 
-В `.env`: Direct URL из Neon, `AUTH_SECRET` (`pnpm dlx auth secret`), `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET`.
+В `.env`: Direct URL из Neon, `AUTH_SECRET` (`pnpm dlx auth secret`), `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET`, `AI_GATEWAY_API_KEY` (Suggest subtasks, [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) — только сервер, не `NEXT_PUBLIC_`).
 
 Локальный OAuth App: Homepage `http://localhost:3000`, Redirect URI `http://localhost:3000/api/auth/callback/github`. Открывай именно `localhost`, не `127.0.0.1`. Для Vercel — **второе** OAuth App с production URL (один Callback на приложение).
 
@@ -63,6 +63,7 @@ Install: `pnpm install` (`postinstall` → `prisma generate`). После сме
 | `AUTH_SECRET` | JWT-cookie; на проде лучше отдельный секрет (`pnpm dlx auth secret`) |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | **production** OAuth App, не localhost |
 | `NEXT_PUBLIC_APP_URL` | `https://nexus-pi-amber-56.vercel.app` без `/` в конце; OG / `metadataBase` |
+| `AI_GATEWAY_API_KEY` | Suggest subtasks; только сервер. Без ключа кнопка жива, ответ — ошибка |
 
 `AUTH_URL` не ставим (`trustHost: true`). Preview с теми же env пишет в ту же БД.
 

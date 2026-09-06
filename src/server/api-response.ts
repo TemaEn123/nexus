@@ -15,12 +15,14 @@ import { z } from "zod";
 /**
  * Стабильные коды для ветвления на клиенте; текст `message` можно менять.
  * `conflict` — гонка create на unique position. PATCH занятого индекса — 200 (shift), не 409.
+ * `unavailable` — сервис не настроен (нет AI_GATEWAY_API_KEY).
  */
 export type ApiErrorCode =
   | "unauthorized"
   | "validation_error"
   | "not_found"
   | "conflict"
+  | "unavailable"
   | "internal";
 
 type ParseSuccess<T> = { ok: true; data: T };

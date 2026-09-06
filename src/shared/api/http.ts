@@ -31,7 +31,28 @@ function errorFields(body: unknown): { code: string; message: string } {
   return { code, message };
 }
 
+/** 4xx/5xx → `ApiClientError` из `{ error: { code, message } }`. Тело читается один раз. */
+export async function apiErrorFromResponse(response: Response) {
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    return new ApiClientError(
+      response.status,
+      "internal",
+      "Invalid JSON response",
+    );
+  }
+
+  const { code, message } = errorFields(body);
+  return new ApiClientError(response.status, code, message);
+}
+
 async function parseJson<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    throw await apiErrorFromResponse(response);
+  }
+
   let body: unknown;
   try {
     body = await response.json();
@@ -41,11 +62,6 @@ async function parseJson<T>(response: Response): Promise<T> {
       "internal",
       "Invalid JSON response",
     );
-  }
-
-  if (!response.ok) {
-    const { code, message } = errorFields(body);
-    throw new ApiClientError(response.status, code, message);
   }
 
   if (!isRecord(body) || !("data" in body)) {

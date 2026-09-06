@@ -2,6 +2,7 @@
 
 import { useSortable } from "@dnd-kit/react/sortable";
 import { useState } from "react";
+import { SuggestSubtasks } from "@/features/ai-assistant/suggest-subtasks";
 import { DeleteCardForm } from "@/features/board/delete-card-form";
 import { EditCardForm } from "@/features/board/edit-card-form";
 import { isTempId } from "@/features/board/temp-id";
@@ -92,6 +93,11 @@ export function KanbanCard({
                 Add description
               </button>
             )}
+            <SuggestSubtasks
+              boardId={boardId}
+              cardId={card.id}
+              columnId={columnId}
+            />
           </>
         )}
       </article>
