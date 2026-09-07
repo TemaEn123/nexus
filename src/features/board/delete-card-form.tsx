@@ -16,10 +16,12 @@ const deleteButtonClass =
 export function DeleteCardForm({
   boardId,
   cardId,
+  cardTitle,
   onError,
 }: {
   boardId: string;
   cardId: string;
+  cardTitle: string;
   onError: (message: string | undefined) => void;
 }) {
   const applyOptimistic = useApplyBoardOptimistic();
@@ -46,6 +48,7 @@ export function DeleteCardForm({
       <input name="boardId" type="hidden" value={boardId} />
       <input name="cardId" type="hidden" value={cardId} />
       <ConfirmSubmit
+        ariaLabel={`Delete card ${cardTitle}`}
         className={deleteButtonClass}
         confirmMessage="Delete this card?"
         idleLabel="Delete"

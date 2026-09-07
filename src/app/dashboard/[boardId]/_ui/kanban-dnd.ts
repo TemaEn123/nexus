@@ -16,7 +16,9 @@ const INTERACTIVE_SELECTOR =
 
 function isInteractiveTarget(target: EventTarget | null) {
   return (
-    target instanceof Element && target.closest(INTERACTIVE_SELECTOR) !== null
+    target instanceof Element &&
+    target.closest("[data-drag-handle]") === null &&
+    target.closest(INTERACTIVE_SELECTOR) !== null
   );
 }
 

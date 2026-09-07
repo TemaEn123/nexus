@@ -5,15 +5,6 @@ import type {
 } from "@/features/board/types";
 import { deleteJson, getJson, patchJson, postJson } from "@/shared/api/http";
 
-/** Prisma `Date` → ISO string, как в `GET /api/boards/:id`. */
-export function toBoardDto(board: BoardDetail): BoardDetail {
-  return JSON.parse(JSON.stringify(board)) as BoardDetail;
-}
-
-export function toCardDto(card: BoardCard): BoardCard {
-  return JSON.parse(JSON.stringify(card)) as BoardCard;
-}
-
 export function fetchBoard(boardId: string) {
   return getJson<BoardDetail>(`/api/boards/${encodeURIComponent(boardId)}`);
 }

@@ -13,7 +13,6 @@ import { PendingSubmit } from "@/features/board/pending-submit";
 import { createCardSchema } from "@/features/board/schemas";
 import { createTempId } from "@/features/board/temp-id";
 import { useApplyBoardOptimistic } from "@/features/board/use-board-optimistic";
-import { toCardDto } from "@/shared/api/board";
 
 const fieldClass =
   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
@@ -55,18 +54,19 @@ export function CreateCardForm({
         setError(undefined);
 
         const tempId = createTempId();
+        const createdAt = new Date().toISOString();
         applyOptimistic({
           type: "add",
           columnId,
-          card: toCardDto({
+          card: {
             id: tempId,
             title: parsed.data.title,
             description: parsed.data.description ?? null,
             position: 0,
             columnId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }),
+            createdAt,
+            updatedAt: createdAt,
+          },
         });
 
         const result = await createCardAction(formData);

@@ -1,6 +1,6 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import type { BoardDetail } from "@/features/board/types";
-import { toBoardDto } from "@/shared/api/board";
+import { toBoardDto } from "@/features/board/dto";
+import type { BoardRecord } from "@/features/board/types";
 import { makeQueryClient } from "@/shared/api/query-client";
 import { boardKeys } from "@/shared/api/query-keys";
 import { KanbanBoard } from "./kanban-board";
@@ -12,7 +12,7 @@ import { KanbanBoard } from "./kanban-board";
 export async function HydratedKanban({
   boardPromise,
 }: {
-  boardPromise: Promise<BoardDetail>;
+  boardPromise: Promise<BoardRecord>;
 }) {
   const board = await boardPromise;
   const queryClient = makeQueryClient();

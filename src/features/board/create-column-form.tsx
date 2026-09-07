@@ -51,7 +51,11 @@ export function CreateColumnForm({ boardId }: { boardId: string }) {
           );
         }}
       >
-        {error ? <p className={errorClass}>{error}</p> : null}
+        {error ? (
+          <p className={errorClass} role="alert">
+            {error}
+          </p>
+        ) : null}
         <label className="flex flex-col gap-1 text-sm font-medium">
           New column
           <input

@@ -13,7 +13,6 @@ import { PendingSubmit } from "@/features/board/pending-submit";
 import { createCardSchema } from "@/features/board/schemas";
 import { createTempId } from "@/features/board/temp-id";
 import { useApplyBoardOptimistic } from "@/features/board/use-board-optimistic";
-import { toCardDto } from "@/shared/api/board";
 
 const suggestClass =
   "mt-2 text-xs font-medium text-zinc-500 hover:text-zinc-950 disabled:opacity-60 dark:hover:text-zinc-50";
@@ -28,10 +27,12 @@ const errorClass = "mt-1 text-xs text-red-800 dark:text-red-200";
 export function SuggestSubtasks({
   boardId,
   cardId,
+  cardTitle,
   columnId,
 }: {
   boardId: string;
   cardId: string;
+  cardTitle: string;
   columnId: string;
 }) {
   const { subtasks, isLoading, error, suggest, stop } =
@@ -45,11 +46,17 @@ export function SuggestSubtasks({
   return (
     <div className="mt-1">
       {isLoading ? (
-        <button className={suggestClass} onClick={stop} type="button">
+        <button
+          aria-label={`Stop suggesting subtasks for ${cardTitle}`}
+          className={suggestClass}
+          onClick={stop}
+          type="button"
+        >
           Stop
         </button>
       ) : (
         <button
+          aria-label={`Suggest subtasks for ${cardTitle}`}
           className={suggestClass}
           onClick={() => {
             slotIds.current = [];
@@ -102,18 +109,19 @@ export function SuggestSubtasks({
 
                       setAddError(undefined);
                       const tempId = createTempId();
+                      const createdAt = new Date().toISOString();
                       applyOptimistic({
                         type: "add",
                         columnId,
-                        card: toCardDto({
+                        card: {
                           id: tempId,
                           title: parsed.data.title,
                           description: null,
                           position: 0,
                           columnId,
-                          createdAt: new Date(),
-                          updatedAt: new Date(),
-                        }),
+                          createdAt,
+                          updatedAt: createdAt,
+                        },
                       });
 
                       const formData = new FormData();
