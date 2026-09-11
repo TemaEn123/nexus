@@ -39,6 +39,8 @@ export const kanbanSensors = [
     },
   }),
   KeyboardSensor.configure({
+    // Не дефолт 10px: колонка w-72, иначе десятки ArrowRight до соседней.
+    offset: { x: 72, y: 24 },
     preventActivation(event) {
       return isInteractiveTarget(event.target);
     },

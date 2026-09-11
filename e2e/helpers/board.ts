@@ -18,3 +18,8 @@ export async function addCard(page: Page, columnTitle: string, title: string) {
   await column.getByRole("button", { name: "Add card" }).click();
   await page.getByRole("button", { name: `Move card ${title}` }).waitFor();
 }
+
+/** Плагин Accessibility: не `alert` — Next route announcer тоже alert. */
+export function dndLiveRegion(page: Page) {
+  return page.locator("[id^='dnd-kit-announcement']");
+}
