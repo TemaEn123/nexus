@@ -20,7 +20,29 @@ test("wrong password stays on login with credentials copy", async ({
   await page.getByRole("button", { name: "Log in" }).click();
 
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.getByText("Invalid email or password.")).toBeVisible();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Invalid email or password." }),
+  ).toBeVisible();
+});
+
+test("duplicate register stays on register with exists alert", async ({
+  page,
+}) => {
+  const email = uniqueE2eEmail();
+  await registerUser(page, email);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.waitForURL("**/login");
+
+  await page.goto("/register");
+  await fillCredentials(page, email);
+  await page.getByRole("button", { name: "Create account" }).click();
+
+  await expect(page).toHaveURL(/\/register/);
+  await expect(
+    page.getByRole("alert").filter({
+      hasText: "An account with this email already exists.",
+    }),
+  ).toBeVisible();
 });
 
 test("register signs in, sign out, then login returns to dashboard", async ({

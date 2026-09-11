@@ -28,14 +28,23 @@ function getQueryClient() {
 /**
  * Query только на клиенте. Root layout остаётся Server Component:
  * этот файл — `"use client"`, импорт не делает layout клиентским.
+ * Devtools только в обычном `pnpm dev`: prod и Playwright (`NEXT_PUBLIC_E2E`) без панели.
  */
+const showQueryDevtools =
+  process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_E2E !== "1";
+
 export function Providers({ children }: { children: ReactNode }) {
   const queryClient = getQueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />
+      {showQueryDevtools ? (
+        <ReactQueryDevtools
+          buttonPosition="bottom-left"
+          initialIsOpen={false}
+        />
+      ) : null}
     </QueryClientProvider>
   );
 }

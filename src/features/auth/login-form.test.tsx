@@ -17,20 +17,20 @@ afterEach(() => {
 });
 
 test("LoginForm shows the credentials banner from searchParam mapping", () => {
-  const { getByText, queryByText } = render(
+  const { getByRole, queryByText } = render(
     <LoginForm error={authFormError("credentials")} />,
   );
 
-  expect(getByText("Invalid email or password.")).toBeDefined();
+  expect(getByRole("alert").textContent).toBe("Invalid email or password.");
   expect(queryByText("Something went wrong. Try again.")).toBeNull();
 });
 
 test("LoginForm shows the invalid banner from searchParam mapping", () => {
-  const { getByText } = render(<LoginForm error={authFormError("invalid")} />);
+  const { getByRole } = render(<LoginForm error={authFormError("invalid")} />);
 
-  expect(
-    getByText("Check email and password (at least 8 characters)."),
-  ).toBeDefined();
+  expect(getByRole("alert").textContent).toBe(
+    "Check email and password (at least 8 characters).",
+  );
 });
 
 test("LoginForm submits email and password to the login action", async () => {

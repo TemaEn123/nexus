@@ -17,11 +17,13 @@ afterEach(() => {
 });
 
 test("RegisterForm shows the exists banner from searchParam mapping", () => {
-  const { getByText } = render(
+  const { getByRole } = render(
     <RegisterForm error={authFormError("exists")} />,
   );
 
-  expect(getByText("An account with this email already exists.")).toBeDefined();
+  expect(getByRole("alert").textContent).toBe(
+    "An account with this email already exists.",
+  );
 });
 
 test("RegisterForm submits email and password to the register action", async () => {
