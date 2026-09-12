@@ -14,6 +14,8 @@
     "test:run": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "perf:cwv": "node scripts/cwv.mjs",
+    "perf:cwv:suite": "node scripts/cwv.mjs --suite",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
