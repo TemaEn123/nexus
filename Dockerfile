@@ -12,7 +12,7 @@ ENV AUTH_SECRET=build-placeholder
 
 RUN corepack enable && corepack prepare pnpm@11.21.0 --activate
 
-COPY package.json pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
 

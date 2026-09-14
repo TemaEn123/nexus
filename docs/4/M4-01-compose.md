@@ -75,7 +75,7 @@ pnpm db:migrate:deploy
 - `depends_on: db` + `service_healthy`
 - `AUTH_SECRET` / GitHub — из `.env`, в yaml нет
 
-Проверка: `docker compose config` — сервисы `db`, `app`. `docker compose up --build` не гоняли: тот же медленный pull Node (шаг 2). Живой `nexus-pg` и занятый `:3000` (`pnpm start` / `dev`) конфликтуют с первым `up`.
+Проверка: `docker compose config` — сервисы `db`, `app`. Первый `up --build` упал на `ERR_PNPM_IGNORED_BUILDS` (`prisma` / `@prisma/engines` / `esbuild` / `msw`). pnpm 11 не читает `package.json#pnpm`; allowlist — `pnpm-workspace.yaml` (`allowBuilds`). Dockerfile копирует его **до** `pnpm install`.
 
 ## Шаг 4 — README
 
