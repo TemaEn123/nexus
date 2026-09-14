@@ -22,6 +22,7 @@ Lab, mobile slow-4G, `pnpm start`, 2026-09-14. Не CrUX и не замер live
 - [pnpm](https://pnpm.io) 11
 - Postgres: [Neon](https://neon.tech) (Direct `DATABASE_URL`, хост без `-pooler`)
 - GitHub OAuth App (для входа через GitHub)
+- Docker + Compose (опционально, локальный стек)
 
 ```bash
 nvm use
@@ -39,6 +40,20 @@ pnpm dev
 ```
 
 Открой [http://localhost:3000](http://localhost:3000). Вход: `/login`, `/register`, `/dashboard`.
+
+## Docker (локально)
+
+Прод — Vercel + Neon, не этот compose. Образы: `mirror.gcr.io` (не `docker.io`).
+
+Полный стек (`app` + Postgres). Свободные порты **3000** и **5433**, в `.env` — `AUTH_SECRET` и GitHub. Compose подменяет `DATABASE_URL` на `@db:5432` внутри сети.
+
+```bash
+docker compose up --build
+```
+
+Открой [http://localhost:3000](http://localhost:3000), не `127.0.0.1`. Первый pull Node из РФ может идти долго.
+
+Только БД, Next на хосте: `docker compose up db -d`, в `.env` `postgresql://nexus:nexus@127.0.0.1:5433/nexus?sslmode=disable`, затем `pnpm db:migrate:deploy && pnpm dev`. Если уже крутится ad-hoc `nexus-pg` на 5433 — сначала `docker stop nexus-pg`. Не вместе с `pnpm dev` на том же `:3000`.
 
 ## Скрипты
 
