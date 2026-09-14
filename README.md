@@ -4,6 +4,18 @@ Kanban-доска. Учебный проект: Next.js App Router, TypeScript, 
 
 **Live:** [https://nexus-pi-amber-56.vercel.app](https://nexus-pi-amber-56.vercel.app)
 
+## Core Web Vitals
+
+Lab, mobile slow-4G, `pnpm start`, 2026-09-14. Не CrUX и не замер live Vercel из РФ.
+
+| | Бюджет | Lab |
+| --- | --- | --- |
+| LCP | < 2.5s | **720 ms** (`/`, заголовок Nexus) |
+| INP | < 200ms | **16 ms** |
+| CLS | < 0.1 | **0** |
+
+Повторить: `pnpm build && pnpm start --hostname 127.0.0.1`, затем `pnpm perf:cwv:suite`. Разведка и оптимизации: [М3.5](docs/3/M3-05-perf.md), [М3.6](docs/3/M3-06-opt.md).
+
 ## Требования
 
 - Node 24 (см. `.nvmrc`)
@@ -36,6 +48,9 @@ pnpm dev
 | `pnpm lint` | Biome (lint + проверка формата) |
 | `pnpm typecheck` | `next typegen` + `tsc --noEmit` |
 | `pnpm build` | Production-сборка |
+| `pnpm start` | Production-сервер (`next start`) |
+| `pnpm perf:cwv` | Lab LCP / CLS / INP на одном URL |
+| `pnpm perf:cwv:suite` | То же на `/`, `/login`, dashboard, доске |
 | `pnpm db:migrate` | Prisma-миграция (dev, интерактив) |
 | `pnpm db:migrate:deploy` | Накатить уже лежащие миграции (prod / Vercel) |
 | `pnpm db:studio` | Таблицы в браузере |

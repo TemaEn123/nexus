@@ -21,5 +21,9 @@ export async function BoardFormError({
     return null;
   }
 
-  return <p className={errorClass}>{formError}</p>;
+  return (
+    <p className={errorClass} role="alert">
+      {formError}
+    </p>
+  );
 }

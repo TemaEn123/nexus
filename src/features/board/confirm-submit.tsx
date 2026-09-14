@@ -4,12 +4,14 @@ import { useFormStatus } from "react-dom";
 
 /** Кнопка delete: confirm, затем submit. `pending` снаружи (Query) или `useFormStatus`. */
 export function ConfirmSubmit({
+  ariaLabel,
   className,
   confirmMessage,
   idleLabel,
   pendingLabel,
   pending: pendingProp,
 }: {
+  ariaLabel?: string;
   className: string;
   confirmMessage: string;
   idleLabel: string;
@@ -21,6 +23,7 @@ export function ConfirmSubmit({
 
   return (
     <button
+      aria-label={ariaLabel}
       className={className}
       disabled={pending}
       onClick={(event) => {

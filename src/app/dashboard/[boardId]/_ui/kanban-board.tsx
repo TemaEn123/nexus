@@ -60,7 +60,11 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
 
   if (!board) {
     if (isError) {
-      return <p className={errorClass}>Something went wrong. Try again.</p>;
+      return (
+        <p className={errorClass} role="alert">
+          Something went wrong. Try again.
+        </p>
+      );
     }
 
     if (isPending) {
@@ -73,7 +77,11 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
   return (
     <BoardOptimisticProvider apply={applyOptimistic}>
       <div className="flex min-h-0 flex-1 flex-col gap-4">
-        {moveError ? <p className={errorClass}>{moveError}</p> : null}
+        {moveError ? (
+          <p className={errorClass} role="alert">
+            {moveError}
+          </p>
+        ) : null}
         <DragDropProvider
           plugins={plugins}
           sensors={kanbanSensors}

@@ -1,4 +1,4 @@
-import type { BoardDetail } from "@/features/board/types";
+import type { BoardRecord } from "@/features/board/types";
 
 /**
  * Title после `loadBoard`. Свой Suspense — Back не ждёт Prisma.
@@ -6,7 +6,7 @@ import type { BoardDetail } from "@/features/board/types";
 export async function BoardHeading({
   boardPromise,
 }: {
-  boardPromise: Promise<BoardDetail>;
+  boardPromise: Promise<BoardRecord>;
 }) {
   const board = await boardPromise;
 

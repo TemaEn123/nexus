@@ -1,9 +1,10 @@
-import { createTextStreamResponse, Output, streamText, toTextStream } from "ai";
+import { createTextStreamResponse, Output, streamText } from "ai";
 import {
   SUGGEST_SUBTASKS_INSTRUCTIONS,
   suggestSubtasksPrompt,
 } from "@/features/ai-assistant/prompt";
 import { suggestSubtasksSchema } from "@/features/ai-assistant/schemas";
+import { toTextStreamOrFail } from "@/features/ai-assistant/text-stream";
 import { idSchema } from "@/features/board/schemas";
 import { getOwnedCard, handleBoardError } from "@/features/board/service";
 import { jsonError, parseIdParam } from "@/server/api-response";
@@ -12,6 +13,7 @@ import { requireApiUser } from "@/server/require-api-user";
 /**
  * Proxy к модели: ключ только на сервере. Body не читаем — карточка из БД.
  * Чужой / нет id → 404, как у остального API. Нет ключа → 503.
+ * Ошибка стрима после 200 рвёт body — иначе `useObject` молчит на пустом 200.
  */
 export const maxDuration = 30;
 
@@ -48,7 +50,7 @@ export async function POST(
     });
 
     return createTextStreamResponse({
-      stream: toTextStream({ stream: result.stream }),
+      stream: toTextStreamOrFail({ stream: result.stream }),
     });
   } catch (error) {
     return handleBoardError(error);

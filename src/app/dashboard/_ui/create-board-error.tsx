@@ -19,5 +19,9 @@ export async function CreateBoardError({
     return null;
   }
 
-  return <p className={errorClass}>{message}</p>;
+  return (
+    <p className={errorClass} role="alert">
+      {message}
+    </p>
+  );
 }

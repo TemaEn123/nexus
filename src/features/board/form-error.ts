@@ -37,7 +37,7 @@ export function mutationFormError(error: unknown) {
   return GENERIC_FORM_ERROR;
 }
 
-/** Create/update: `invalid` = пустой title. Delete: `invalid`/`not-found` — общее. */
+/** Create/update: `invalid` = пустой title. Delete: `invalid`/`not_found` — общее. */
 export function cardActionError(
   code: string,
   kind: "write" | "delete" = "write",

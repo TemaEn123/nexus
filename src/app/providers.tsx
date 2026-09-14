@@ -5,7 +5,7 @@ import {
   type QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { makeQueryClient } from "@/shared/api/query-client";
 
@@ -13,7 +13,7 @@ let browserQueryClient: QueryClient | undefined;
 
 /**
  * На сервере — новый клиент на каждый запрос (иначе кэш утечёт между юзерами).
- * В браузере — один экземпляр: `useState` в корне с Suspense может выбросить
+ * В браузере — один экземпляр: `useState` под Suspense доски может выбросить
  * клиент до первого commit.
  */
 function getQueryClient() {
@@ -25,9 +25,19 @@ function getQueryClient() {
   return browserQueryClient;
 }
 
+const showQueryDevtools =
+  process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_E2E !== "1";
+
+const QueryDevtools = showQueryDevtools
+  ? dynamic(() => import("./query-devtools").then((mod) => mod.QueryDevtools), {
+      ssr: false,
+    })
+  : () => null;
+
 /**
- * Query только на клиенте. Root layout остаётся Server Component:
- * этот файл — `"use client"`, импорт не делает layout клиентским.
+ * Query только вокруг канбана (`HydratedKanban`). Root layout — RSC без этого импорта,
+ * чтобы `/` и `/login` не тащили TanStack Query.
+ * Devtools только в обычном `pnpm dev`: prod и Playwright (`NEXT_PUBLIC_E2E`) без панели.
  */
 export function Providers({ children }: { children: ReactNode }) {
   const queryClient = getQueryClient();
@@ -35,7 +45,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />
+      {showQueryDevtools ? <QueryDevtools /> : null}
     </QueryClientProvider>
   );
 }

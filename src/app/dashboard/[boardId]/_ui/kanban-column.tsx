@@ -54,6 +54,7 @@ export function KanbanColumn({
             }}
           >
             <ConfirmSubmit
+              ariaLabel={`Delete column ${column.title}`}
               className={deleteButtonClass}
               confirmMessage="Delete this column and its cards?"
               idleLabel="Delete"
