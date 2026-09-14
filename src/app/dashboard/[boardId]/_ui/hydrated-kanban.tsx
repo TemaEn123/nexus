@@ -1,4 +1,5 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { Providers } from "@/app/providers";
 import { toBoardDto } from "@/features/board/dto";
 import type { BoardRecord } from "@/features/board/types";
 import { makeQueryClient } from "@/shared/api/query-client";
@@ -19,8 +20,10 @@ export async function HydratedKanban({
   queryClient.setQueryData(boardKeys.detail(board.id), toBoardDto(board));
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <KanbanBoard boardId={board.id} />
-    </HydrationBoundary>
+    <Providers>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <KanbanBoard boardId={board.id} />
+      </HydrationBoundary>
+    </Providers>
   );
 }
