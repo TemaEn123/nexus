@@ -96,7 +96,7 @@ E2E: `docker compose up db -d`, затем `pnpm test:e2e`. Preview URL на PR 
 pnpm db:migrate:deploy && pnpm build
 ```
 
-Install: `pnpm install` (`postinstall` → `prisma generate`). После смены `NEXT_PUBLIC_*` — Redeploy, не Restart.
+Install: `pnpm install` (`postinstall` → `prisma generate`). Кэш Vercel часто ставит `Already up to date` и **не** гоняет postinstall — клиент в `src/generated/prisma` (не в git). Поэтому `prebuild` снова делает `prisma generate` перед `next build`. После смены `NEXT_PUBLIC_*` — Redeploy, не Restart.
 
 | Env | Зачем |
 | --- | --- |
