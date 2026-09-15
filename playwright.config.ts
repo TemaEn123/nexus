@@ -7,7 +7,6 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  reporter: "list",
   use: {
     baseURL,
     trace: "on-first-retry",
@@ -15,9 +14,14 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"], channel: "chrome" },
+      use: {
+        ...devices["Desktop Chrome"],
+        // Хост / РФ: системный Chrome. GHA: бандл Playwright (нет google-chrome).
+        ...(process.env.CI ? {} : { channel: "chrome" as const }),
+      },
     },
   ],
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   // М4 CI: pnpm build && pnpm start. Локально — dev, reuseExistingServer.
   // Пустой ключ: E2E Suggest = 503, не живой Gateway. .env не перебивает уже заданный env.
   // NEXT_PUBLIC_E2E: без Query Devtools, иначе кнопка ворует Tab. Нужен сервер, который

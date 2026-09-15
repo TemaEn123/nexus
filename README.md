@@ -3,6 +3,7 @@
 Kanban-доска. Учебный проект: Next.js App Router, TypeScript, FSD-lite.
 
 **Live:** [https://nexus-pi-amber-56.vercel.app](https://nexus-pi-amber-56.vercel.app)
+[![CI](https://github.com/TemaEn123/Nexus/actions/workflows/ci.yml/badge.svg)](https://github.com/TemaEn123/Nexus/actions/workflows/ci.yml)
 
 ## Core Web Vitals
 
@@ -62,6 +63,8 @@ docker compose up --build
 | `pnpm dev` | Dev-сервер |
 | `pnpm lint` | Biome (lint + проверка формата) |
 | `pnpm typecheck` | `next typegen` + `tsc --noEmit` |
+| `pnpm test:run` | Vitest, один прогон (CI job `quality`) |
+| `pnpm test:e2e` | Playwright; локально Chrome + Postgres на 5433 |
 | `pnpm build` | Production-сборка |
 | `pnpm start` | Production-сервер (`next start`) |
 | `pnpm perf:cwv` | Lab LCP / CLS / INP на одном URL |
@@ -71,7 +74,15 @@ docker compose up --build
 | `pnpm db:studio` | Таблицы в браузере |
 | `pnpm db:generate` | Клиент Prisma (также в `postinstall`) |
 
-Pre-commit запускает `lint` + `typecheck`. Коммить из **терминала** — Source Control в Cursor сейчас пропускает git-хуки.
+Pre-commit запускает `lint` + `typecheck` (без тестов). Коммить из **терминала** — Source Control в Cursor сейчас пропускает git-хуки.
+
+PR и `main`: GitHub Actions — `quality` (`lint` → `typecheck` → `test:run`) и `e2e` (свой Postgres, Playwright Chromium). Локально quality:
+
+```bash
+pnpm lint && pnpm typecheck && pnpm test:run
+```
+
+E2E: `docker compose up db -d`, затем `pnpm test:e2e`. Preview URL на PR пишет бот Vercel. [М4.3](docs/4/M4-03-ci.md).
 
 `.env` и `.vercel` в git не попадают. Prisma (`src/shared/lib/db.ts`) и Auth.js (`src/server/auth.ts`) — только сервер, не `"use client"`.
 
@@ -95,7 +106,7 @@ Install: `pnpm install` (`postinstall` → `prisma generate`). После сме
 | `NEXT_PUBLIC_APP_URL` | `https://nexus-pi-amber-56.vercel.app` без `/` в конце; OG / `metadataBase` |
 | `AI_GATEWAY_API_KEY` | Suggest subtasks; только сервер. Без ключа кнопка жива, ответ — ошибка |
 
-`AUTH_URL` не ставим (`trustHost: true`). Preview с теми же env пишет в ту же БД.
+`AUTH_URL` не ставим (`trustHost: true`). Preview на PR делает **Vercel GitHub App** (бот пишет URL в PR), не GitHub Actions. Те же env — та же Neon, что прод. GitHub OAuth на `*.vercel.app` может дать `Configuration` (отдельное OAuth App не заводили).
 
 ## Архитектура
 
