@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   // 3) профайлер: без обёртки ломается. Иначе — лишнее.
   // "use no memo" — только если компилятор ломает конкретный файл.
   reactCompiler: true,
+  // Slim Docker (М4.2): `.next/standalone` + `node server.js`.
+  // Хост и Vercel — без `output`, обычный `next start`.
+  output: process.env.DOCKER === "1" ? "standalone" : undefined,
 };
 
 export default nextConfig;
