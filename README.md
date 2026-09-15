@@ -45,13 +45,13 @@ pnpm dev
 
 Прод — Vercel + Neon, не этот compose. Образы: `mirror.gcr.io` (не `docker.io`).
 
-Полный стек (`app` + Postgres). Свободные порты **3000** и **5433**, в `.env` — `AUTH_SECRET` и GitHub. Compose подменяет `DATABASE_URL` на `@db:5432` внутри сети.
+Полный стек: `db` → one-shot `migrate` (`prisma migrate deploy`) → slim `app` (`output: "standalone"`, `node server.js`). Runner ~**97 MB** content (было ~848 MB). Свободные порты **3000** и **5433**, в `.env` — `AUTH_SECRET` и GitHub. Compose подменяет `DATABASE_URL` на `@db:5432`.
 
 ```bash
 docker compose up --build
 ```
 
-Открой [http://localhost:3000](http://localhost:3000), не `127.0.0.1`. Первый pull Node из РФ может идти долго.
+Открой [http://localhost:3000](http://localhost:3000), не `127.0.0.1`. Первый pull Node из РФ может идти долго. Как ужат образ: [М4.2](docs/4/M4-02-slim.md).
 
 Только БД, Next на хосте: `docker compose up db -d`, в `.env` `postgresql://nexus:nexus@127.0.0.1:5433/nexus?sslmode=disable`, затем `pnpm db:migrate:deploy && pnpm dev`. Если уже крутится ad-hoc `nexus-pg` на 5433 — сначала `docker stop nexus-pg`. Не вместе с `pnpm dev` на том же `:3000`.
 

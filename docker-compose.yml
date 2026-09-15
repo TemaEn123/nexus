@@ -18,19 +18,38 @@ services:
       retries: 5
       start_period: 10s
 
+  migrate:
+    build:
+      context: .
+      target: deps
+    container_name: nexus-migrate
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://nexus:nexus@db:5432/nexus?sslmode=disable
+    command: pnpm db:migrate:deploy
+    depends_on:
+      db:
+        condition: service_healthy
+
   app:
-    build: .
+    build:
+      context: .
+      target: runner
     container_name: nexus-app
     restart: unless-stopped
     env_file: .env
     environment:
       DATABASE_URL: postgresql://nexus:nexus@db:5432/nexus?sslmode=disable
       NEXT_PUBLIC_APP_URL: http://localhost:3000
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
     ports:
       - "3000:3000"
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   nexus-pg-data:
