@@ -82,7 +82,7 @@ PR и `main`: GitHub Actions — `quality` (`lint` → `typecheck` → `test:run
 pnpm lint && pnpm typecheck && pnpm test:run
 ```
 
-E2E: `docker compose up db -d`, затем `pnpm test:e2e`. Preview URL на PR пишет бот Vercel. [М4.3](docs/4/M4-03-ci.md). В `main` merge только после зелёных **`quality`** и **`e2e`** (Ruleset, не Vercel). [М4.4](docs/4/M4-04-protect.md).
+E2E: `docker compose up db -d`, затем `pnpm test:e2e`. Preview URL на PR пишет бот Vercel. [М4.3](docs/4/M4-03-ci.md). В `main` merge только после зелёных **`quality`** и **`e2e`** (Ruleset, не Vercel). [М4.4](docs/4/M4-04-protect.md). Dependabot раз в неделю открывает PR на npm (pnpm lockfile) и GitHub Actions — merge руками, major смотреть глазами. [М4.5](docs/4/M4-05-deps.md).
 
 `.env` и `.vercel` в git не попадают. Prisma (`src/shared/lib/db.ts`) и Auth.js (`src/server/auth.ts`) — только сервер, не `"use client"`.
 
