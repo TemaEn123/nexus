@@ -25,7 +25,7 @@
 
 Preview Dependabot-PR пишет в тот же Neon, что прод — как остальные PR. `migrate:deploy` идемпотентен.
 
-Порядок: граница → yaml npm → yaml Actions (этот шаг) → Settings GitHub → README.
+Порядок: граница → yaml npm → yaml Actions → Settings GitHub → README.
 
 ## Шаг 1 — `dependabot.yml`: npm
 
@@ -38,7 +38,7 @@ Preview Dependabot-PR пишет в тот же Neon, что прод — как
 
 Не добавляли: `docker`, `ignore`, группы, `target-branch` (дефолт `main`). `github-actions` — шаг 2.
 
-Проверка: файл в репо. Живой PR от бота — после merge в `main` и шага 3 (Settings).
+Проверка: файл в `main`. Живые PR — шаг 3.
 
 ## Шаг 2 — `github-actions`
 
@@ -50,6 +50,35 @@ Preview Dependabot-PR пишет в тот же Neon, что прод — как
 
 Не добавляли: `docker`, auto-merge. PR от бота по-прежнему идут в `main` и ждут `quality` + `e2e`.
 
-## Шаги 3–5
+## Шаг 3 — Settings GitHub
 
-Ещё нет. Дальше: шаг 3 — Settings GitHub (Dependabot version updates + security alerts).
+Сделано руками (не YAML). Не **Secrets and variables → Dependabot** (это credentials для приватных реестров; пусто, так и должно). Нужный экран: **Settings → Advanced Security → Dependabot**.
+
+Version updates включает **файл** `.github/dependabot.yml` на `main`. Кнопка Enable, которая создаёт шаблонный yaml, не нужна.
+
+На странице: alerts, malware alerts, security updates, version updates. Code scanning / Copilot Autofix / push protection — не цель шага.
+
+Проверка (сразу после включения, 2026-09-17): бот открыл **8 PR** — лимит 5 считается **на ecosystem**, не суммарно.
+
+| Ecosystem | PR | Заметка |
+| --- | --- | --- |
+| npm | 5 (потолок) | `@types/node` 20→26, `next` 16.3.3→16.3.5, `@prisma/adapter-pg` 7.9→7.10, `jsdom` 26→30, `@vitejs/plugin-react` 5→6 |
+| github-actions | 3 | `checkout` / `setup-node` / `upload-artifact` 4→7 |
+
+До этой волны уже в `main`: #9 `next` 16.3.0→16.3.3 (патч), #8 `vitest` → 4.1.11 (major; merge под Ruleset `quality` + `e2e`).
+
+Правило merge: руками, только зелёные checks. Major и рассинхрон Prisma (`adapter-pg` без `prisma` / `@prisma/client`) — не мержить «потому что бот открыл». Остальные npm-апдейты ждут, пока не закроется часть из пяти.
+
+Preview Dependabot-PR — тот же Neon, что прод. `migrate:deploy` идемпотентен.
+
+## Шаг 4 — README
+
+Сделано: в блоке CI — weekly PR npm + Actions, merge руками после `quality` + `e2e`, major глазами. Ссылка на этот отчёт.
+
+## Итог
+
+M4.5 закрыт. Код: `.github/dependabot.yml`. Settings не в git. `ci.yml` / Ruleset / Husky не трогали. Renovate не ставили. Ecosystem `docker` нет.
+
+M4 (Docker lite + CI/CD) по плану закрыт: compose, slim image, GHA, Ruleset, Dependabot.
+
+Не делали: auto-merge, ignore всех major в yaml, группы «всё в один PR», Dependabot secrets.
