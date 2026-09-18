@@ -6,6 +6,8 @@ WORKDIR /app
 ENV HUSKY=0
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+# Карты заливает Vercel, не этот образ. Не качаем бинарь sentry-cli с чужого CDN.
+ENV SENTRYCLI_SKIP_DOWNLOAD=1
 ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
 # prisma generate / next build читают env на этапе модуля. Runtime URL задаёт compose.
 ENV DATABASE_URL=postgresql://nexus:nexus@db:5432/nexus?sslmode=disable

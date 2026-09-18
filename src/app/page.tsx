@@ -1,6 +1,6 @@
+import { SITE_DESCRIPTION, SITE_NAME } from "@/shared/lib/site";
 import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/shared/lib/site";
 
 /**
  * Канонический OG для `/`. Вложенный `openGraph` в Next заменяет родителя,
