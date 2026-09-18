@@ -101,8 +101,17 @@ Token и DSN в чат не присылали — так и надо. Env на 
 
 Сделано руками. Production: `NEXT_PUBLIC_SENTRY_DSN` (префикс оставить, в UI это Config, не Secret), `SENTRY_DSN`, `SENTRY_AUTH_TOKEN` только **Build**, `SENTRY_ORG=nexus-6t`, `SENTRY_PROJECT=nexus`, `SENTRY_URL=https://app.glitchtip.com`. Preview не заполняли. `.env` в git не кладём.
 
-SDK на `main` ещё нет: без merge этот env на проде молчит. Redeploy старого `main` не нужен.
+Код М5.1 в `main`, Production задеплоен. Throw в `page.tsx` в коммите нет.
 
-## Шаги 6–7
+## Шаг 6 — живой throw на проде
 
-Ещё нет. Дальше: PR с кодом М5.1 в `main` (без `.env`) → зелёный деплой → шаг 6 живой throw на live.
+Сделано в коде (ещё не проверка Issues): временный `/glitchtip-smoke`, не в нав, `robots: noindex`.
+
+- `?side=server` — `glitchtip-smoke-prod-server` (RSC)
+- кнопка — `glitchtip-smoke-prod-browser`
+
+`/` не трогали. После деплоя: оба события в GlitchTip, стек `src/app/glitchtip-smoke/...`, не `app-….js:1`. Потом удалить каталог `src/app/glitchtip-smoke`.
+
+## Шаг 7
+
+Ещё нет. README после зелёного стека на проде.
