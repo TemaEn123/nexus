@@ -82,7 +82,7 @@ PR и `main`: GitHub Actions — `quality` (`lint` → `typecheck` → `test:run
 pnpm lint && pnpm typecheck && pnpm test:run
 ```
 
-E2E: `docker compose up db -d`, затем `pnpm test:e2e`. Preview URL на PR пишет бот Vercel. [М4.3](docs/4/M4-03-ci.md). В `main` merge только после зелёных **`quality`** и **`e2e`** (Ruleset, не Vercel). [М4.4](docs/4/M4-04-protect.md). Dependabot раз в неделю открывает PR на npm (pnpm lockfile) и GitHub Actions — merge руками, major смотреть глазами. [М4.5](docs/4/M4-05-deps.md).
+E2E: `docker compose up db -d`, затем `pnpm test:e2e`. Preview URL на PR пишет бот Vercel. [М4.3](docs/4/M4-03-ci.md). В `main` merge только после зелёных **`quality`** и **`e2e`** (Ruleset, не Vercel). [М4.4](docs/4/M4-04-protect.md). Dependabot раз в неделю открывает PR на npm (pnpm lockfile) и GitHub Actions — merge руками, major смотреть глазами. [М4.5](docs/4/M4-05-deps.md). Ошибки на проде (браузер и сервер) → **GlitchTip**, SDK `@sentry/nextjs`; source maps заливаются на билде Vercel и не отдаются с сайта. [М5.1](docs/5/M5-01-sentry.md).
 
 `.env` и `.vercel` в git не попадают. Prisma (`src/shared/lib/db.ts`) и Auth.js (`src/server/auth.ts`) — только сервер, не `"use client"`.
 
@@ -105,6 +105,11 @@ Install: `pnpm install` (`postinstall` → `prisma generate`). Кэш Vercel ч�
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | **production** OAuth App, не localhost |
 | `NEXT_PUBLIC_APP_URL` | `https://nexus-pi-amber-56.vercel.app` без `/` в конце; OG / `metadataBase` |
 | `AI_GATEWAY_API_KEY` | Suggest subtasks; только сервер. Без ключа кнопка жива, ответ — ошибка |
+| `NEXT_PUBLIC_SENTRY_DSN` | GlitchTip DSN; префикс нужен — клиентский SDK. В UI Vercel это Config, не Secret |
+| `SENTRY_DSN` | Тот же DSN на сервере; можно не дублировать |
+| `SENTRY_AUTH_TOKEN` | Upload карт; **только Build**, не `NEXT_PUBLIC_` |
+| `SENTRY_ORG` / `SENTRY_PROJECT` | Slug org/проекта GlitchTip (`nexus-6t` / `nexus`), не число из URL |
+| `SENTRY_URL` | `https://app.glitchtip.com` — иначе карты уедут на sentry.io |
 
 `AUTH_URL` не ставим (`trustHost: true`). Preview на PR делает **Vercel GitHub App** (бот пишет URL в PR), не GitHub Actions. Те же env — та же Neon, что прод. GitHub OAuth на `*.vercel.app` может дать `Configuration` (отдельное OAuth App не заводили).
 
