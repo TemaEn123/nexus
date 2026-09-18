@@ -105,13 +105,10 @@ Token и DSN в чат не присылали — так и надо. Env на 
 
 ## Шаг 6 — живой throw на проде
 
-Сделано в коде (ещё не проверка Issues): временный `/glitchtip-smoke`, не в нав, `robots: noindex`.
+Сделано: на live ловились `glitchtip-smoke-prod-server` и `glitchtip-smoke-prod-browser`. Каталог `src/app/glitchtip-smoke` удалён — не оставляем boom в проде.
 
-- `?side=server` — `glitchtip-smoke-prod-server` (RSC)
-- кнопка — `glitchtip-smoke-prod-browser`
-
-`/` не трогали. После деплоя: оба события в GlitchTip, стек `src/app/glitchtip-smoke/...`, не `app-….js:1`. Потом удалить каталог `src/app/glitchtip-smoke`.
+Рядом был `Minified React error #441` — это **текст** ошибки React в production (без dev overlay), не провал source maps. Побочный эффект error boundary / RSC throw. Smoke в GlitchTip можно Resolve.
 
 ## Шаг 7
 
-Ещё нет. README после зелёного стека на проде.
+Ещё нет. README: ошибки прода → GlitchTip, карты не публичные.
