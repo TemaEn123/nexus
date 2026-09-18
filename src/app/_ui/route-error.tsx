@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
 import { useEffect } from "react";
 
@@ -30,6 +31,7 @@ function digestOf(error: unknown) {
 /**
  * Общая разметка для `error.tsx` / `global-error.tsx`.
  * Next 16.3 передаёт `retry` (refresh RSC + сброс boundary), не `reset`.
+ * Сюда же `captureException`: `global-error` тоже рендерит `RouteError`.
  */
 export function RouteError({ error, retry, homeHref }: RouteErrorProps) {
   const isDev = process.env.NODE_ENV === "development";
@@ -38,6 +40,7 @@ export function RouteError({ error, retry, homeHref }: RouteErrorProps) {
 
   useEffect(() => {
     console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (
