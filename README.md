@@ -9,11 +9,11 @@ Kanban-доска. Учебный проект: Next.js App Router, TypeScript, 
 
 Lab, mobile slow-4G, `pnpm start`, 2026-09-14. Не CrUX и не замер live Vercel из РФ.
 
-| | Бюджет | Lab |
-| --- | --- | --- |
-| LCP | < 2.5s | **720 ms** (`/`, заголовок Nexus) |
-| INP | < 200ms | **16 ms** |
-| CLS | < 0.1 | **0** |
+|     | Бюджет  | Lab                               |
+| --- | ------- | --------------------------------- |
+| LCP | < 2.5s  | **720 ms** (`/`, заголовок Nexus) |
+| INP | < 200ms | **16 ms**                         |
+| CLS | < 0.1   | **0**                             |
 
 Повторить: `pnpm build && pnpm start --hostname 127.0.0.1`, затем `pnpm perf:cwv:suite`. Разведка и оптимизации: [М3.5](docs/3/M3-05-perf.md), [М3.6](docs/3/M3-06-opt.md).
 
@@ -58,21 +58,21 @@ docker compose up --build
 
 ## Скрипты
 
-| Команда | Что делает |
-| --- | --- |
-| `pnpm dev` | Dev-сервер |
-| `pnpm lint` | Biome (lint + проверка формата) |
-| `pnpm typecheck` | `next typegen` + `tsc --noEmit` |
-| `pnpm test:run` | Vitest, один прогон (CI job `quality`) |
-| `pnpm test:e2e` | Playwright; локально Chrome + Postgres на 5433 |
-| `pnpm build` | Production-сборка |
-| `pnpm start` | Production-сервер (`next start`) |
-| `pnpm perf:cwv` | Lab LCP / CLS / INP на одном URL |
-| `pnpm perf:cwv:suite` | То же на `/`, `/login`, dashboard, доске |
-| `pnpm db:migrate` | Prisma-миграция (dev, интерактив) |
-| `pnpm db:migrate:deploy` | Накатить уже лежащие миграции (prod / Vercel) |
-| `pnpm db:studio` | Таблицы в браузере |
-| `pnpm db:generate` | Клиент Prisma (также в `postinstall`) |
+| Команда                  | Что делает                                     |
+| ------------------------ | ---------------------------------------------- |
+| `pnpm dev`               | Dev-сервер                                     |
+| `pnpm lint`              | Biome (lint + проверка формата)                |
+| `pnpm typecheck`         | `next typegen` + `tsc --noEmit`                |
+| `pnpm test:run`          | Vitest, один прогон (CI job `quality`)         |
+| `pnpm test:e2e`          | Playwright; локально Chrome + Postgres на 5433 |
+| `pnpm build`             | Production-сборка                              |
+| `pnpm start`             | Production-сервер (`next start`)               |
+| `pnpm perf:cwv`          | Lab LCP / CLS / INP на одном URL               |
+| `pnpm perf:cwv:suite`    | То же на `/`, `/login`, dashboard, доске       |
+| `pnpm db:migrate`        | Prisma-миграция (dev, интерактив)              |
+| `pnpm db:migrate:deploy` | Накатить уже лежащие миграции (prod / Vercel)  |
+| `pnpm db:studio`         | Таблицы в браузере                             |
+| `pnpm db:generate`       | Клиент Prisma (также в `postinstall`)          |
 
 Pre-commit запускает `lint` + `typecheck` (без тестов). Коммить из **терминала** — Source Control в Cursor сейчас пропускает git-хуки.
 
@@ -82,7 +82,7 @@ PR и `main`: GitHub Actions — `quality` (`lint` → `typecheck` → `test:run
 pnpm lint && pnpm typecheck && pnpm test:run
 ```
 
-E2E: `docker compose up db -d`, затем `pnpm test:e2e`. Preview URL на PR пишет бот Vercel. [М4.3](docs/4/M4-03-ci.md). В `main` merge только после зелёных **`quality`** и **`e2e`** (Ruleset, не Vercel). [М4.4](docs/4/M4-04-protect.md). Dependabot раз в неделю открывает PR на npm (pnpm lockfile) и GitHub Actions — merge руками, major смотреть глазами. [М4.5](docs/4/M4-05-deps.md). Ошибки на проде (браузер и сервер) → **GlitchTip**, SDK `@sentry/nextjs`; source maps заливаются на билде Vercel и не отдаются с сайта. [М5.1](docs/5/M5-01-sentry.md).
+E2E: `docker compose up db -d`, затем `pnpm test:e2e`. Preview URL на PR пишет бот Vercel. [М4.3](docs/4/M4-03-ci.md). В `main` merge только после зелёных **`quality`** и **`e2e`** (Ruleset, не Vercel). [М4.4](docs/4/M4-04-protect.md). Dependabot раз в неделю открывает PR на npm (pnpm lockfile) и GitHub Actions — merge руками, major смотреть глазами. [М4.5](docs/4/M4-05-deps.md). Ошибки на проде (браузер и сервер) → **GlitchTip**, SDK `@sentry/nextjs`; source maps заливаются на билде Vercel и не отдаются с сайта. [М5.1](docs/5/M5-01-sentry.md). Route Handlers пишут structured JSON logs в stdout: `api_request` для access log и `board_api_error` для ошибок service; смотреть в Vercel Runtime Logs / Docker logs. [М5.2](docs/5/M5-02-logging.md).
 
 `.env` и `.vercel` в git не попадают. Prisma (`src/shared/lib/db.ts`) и Auth.js (`src/server/auth.ts`) — только сервер, не `"use client"`.
 
@@ -98,18 +98,18 @@ pnpm db:migrate:deploy && pnpm build
 
 Install: `pnpm install` (`postinstall` → `prisma generate`). Кэш Vercel часто ставит `Already up to date` и **не** гоняет postinstall — клиент в `src/generated/prisma` (не в git). Поэтому `prebuild` снова делает `prisma generate` перед `next build`. После смены `NEXT_PUBLIC_*` — Redeploy, не Restart.
 
-| Env | Зачем |
-| --- | --- |
-| `DATABASE_URL` | Neon Direct |
-| `AUTH_SECRET` | JWT-cookie; на проде лучше отдельный секрет (`pnpm dlx auth secret`) |
-| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | **production** OAuth App, не localhost |
-| `NEXT_PUBLIC_APP_URL` | `https://nexus-pi-amber-56.vercel.app` без `/` в конце; OG / `metadataBase` |
-| `AI_GATEWAY_API_KEY` | Suggest subtasks; только сервер. Без ключа кнопка жива, ответ — ошибка |
-| `NEXT_PUBLIC_SENTRY_DSN` | GlitchTip DSN; префикс нужен — клиентский SDK. В UI Vercel это Config, не Secret |
-| `SENTRY_DSN` | Тот же DSN на сервере; можно не дублировать |
-| `SENTRY_AUTH_TOKEN` | Upload карт; **только Build**, не `NEXT_PUBLIC_` |
-| `SENTRY_ORG` / `SENTRY_PROJECT` | Slug org/проекта GlitchTip (`nexus-6t` / `nexus`), не число из URL |
-| `SENTRY_URL` | `https://app.glitchtip.com` — иначе карты уедут на sentry.io |
+| Env                                     | Зачем                                                                            |
+| --------------------------------------- | -------------------------------------------------------------------------------- |
+| `DATABASE_URL`                          | Neon Direct                                                                      |
+| `AUTH_SECRET`                           | JWT-cookie; на проде лучше отдельный секрет (`pnpm dlx auth secret`)             |
+| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | **production** OAuth App, не localhost                                           |
+| `NEXT_PUBLIC_APP_URL`                   | `https://nexus-pi-amber-56.vercel.app` без `/` в конце; OG / `metadataBase`      |
+| `AI_GATEWAY_API_KEY`                    | Suggest subtasks; только сервер. Без ключа кнопка жива, ответ — ошибка           |
+| `NEXT_PUBLIC_SENTRY_DSN`                | GlitchTip DSN; префикс нужен — клиентский SDK. В UI Vercel это Config, не Secret |
+| `SENTRY_DSN`                            | Тот же DSN на сервере; можно не дублировать                                      |
+| `SENTRY_AUTH_TOKEN`                     | Upload карт; **только Build**, не `NEXT_PUBLIC_`                                 |
+| `SENTRY_ORG` / `SENTRY_PROJECT`         | Slug org/проекта GlitchTip (`nexus-6t` / `nexus`), не число из URL               |
+| `SENTRY_URL`                            | `https://app.glitchtip.com` — иначе карты уедут на sentry.io                     |
 
 `AUTH_URL` не ставим (`trustHost: true`). Preview на PR делает **Vercel GitHub App** (бот пишет URL в PR), не GitHub Actions. Те же env — та же Neon, что прод. GitHub OAuth на `*.vercel.app` может дать `Configuration` (отдельное OAuth App не заводили).
 

@@ -7,6 +7,7 @@ import { suggestSubtasksSchema } from "@/features/ai-assistant/schemas";
 import { toTextStreamOrFail } from "@/features/ai-assistant/text-stream";
 import { idSchema } from "@/features/board/schemas";
 import { getOwnedCard, handleBoardError } from "@/features/board/service";
+import { withApiLog } from "@/server/api-log";
 import { jsonError, parseIdParam } from "@/server/api-response";
 import { requireApiUser } from "@/server/require-api-user";
 
@@ -17,7 +18,7 @@ import { requireApiUser } from "@/server/require-api-user";
  */
 export const maxDuration = 30;
 
-export async function POST(
+export const POST = withApiLog(async function POST(
   _request: Request,
   ctx: RouteContext<"/api/cards/[cardId]/suggest">,
 ) {
@@ -55,4 +56,4 @@ export async function POST(
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});

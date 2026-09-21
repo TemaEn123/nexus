@@ -3,6 +3,7 @@ import "server-only";
 import type { Session } from "next-auth";
 import { jsonError } from "@/server/api-response";
 import { auth } from "@/server/auth";
+import { setLogUserId } from "@/server/logger";
 
 type ApiUser = Session["user"];
 
@@ -31,6 +32,8 @@ export async function requireApiUser(): Promise<
       response: jsonError(401, "unauthorized", "Sign in required"),
     };
   }
+
+  setLogUserId(session.user.id);
 
   return { ok: true, user: session.user };
 }

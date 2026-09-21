@@ -4,6 +4,7 @@ import {
   handleBoardError,
   updateCard,
 } from "@/features/board/service";
+import { withApiLog } from "@/server/api-log";
 import { jsonOk, parseBody, parseIdParam } from "@/server/api-response";
 import { requireApiUser } from "@/server/require-api-user";
 
@@ -13,7 +14,7 @@ import { requireApiUser } from "@/server/require-api-user";
  * Индекс больше длины списка — в конец. `columnId` другой своей доски → 404.
  */
 
-export async function PATCH(
+export const PATCH = withApiLog(async function PATCH(
   request: Request,
   ctx: RouteContext<"/api/cards/[cardId]">,
 ) {
@@ -39,9 +40,9 @@ export async function PATCH(
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});
 
-export async function DELETE(
+export const DELETE = withApiLog(async function DELETE(
   _request: Request,
   ctx: RouteContext<"/api/cards/[cardId]">,
 ) {
@@ -62,4 +63,4 @@ export async function DELETE(
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});
