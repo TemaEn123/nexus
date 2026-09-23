@@ -9,6 +9,7 @@ import { idSchema } from "@/features/board/schemas";
 import { getOwnedCard, handleBoardError } from "@/features/board/service";
 import { withApiLog } from "@/server/api-log";
 import { jsonError, parseIdParam } from "@/server/api-response";
+import { getEnv } from "@/server/env";
 import { requireApiUser } from "@/server/require-api-user";
 
 /**
@@ -27,7 +28,7 @@ export const POST = withApiLog(async function POST(
     return gate.response;
   }
 
-  if (!process.env.AI_GATEWAY_API_KEY?.trim()) {
+  if (!getEnv().AI_GATEWAY_API_KEY) {
     return jsonError(
       503,
       "unavailable",

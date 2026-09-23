@@ -18,7 +18,7 @@ export default function GlobalError({
     <html className="h-full antialiased" lang="en">
       <body className="min-h-full flex flex-col">
         <title>Something went wrong</title>
-        <RouteError error={error} homeHref="/" retry={retry} />
+        <RouteError error={error} retry={retry} scope="global" />
       </body>
     </html>
   );

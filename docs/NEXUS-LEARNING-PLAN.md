@@ -250,16 +250,17 @@ Sentry · Structured logging · Environment management
 1. **Sentry:** frontend + server errors, source maps в production
 2. **Structured logging:** JSON logs в Route Handlers (не `console.log`)
 3. **Error boundaries:** graceful UI для server/client errors
-4. **AI rate limiting:** лимит запросов per user (in-memory или DB counter)
-5. **Security checklist:** CSRF, env validation, input sanitization для AI prompts
-6. **Auth hardening:** подтверждение email (Resend/Nodemailer + `VerificationToken`); после verify выключить `allowDangerousEmailAccountLinking`. Пока почта не подтверждена — GitHub не склеивать с Credentials-аккаунтом
+4. **Security checklist:** CSRF, env validation, input sanitization для AI prompts
+5. **Auth hardening:** подтверждение email (Resend/Nodemailer + `VerificationToken`); после verify выключить `allowDangerousEmailAccountLinking`. Пока почта не подтверждена — GitHub не склеивать с Credentials-аккаунтом
+6. **Groq вместо Vercel AI Gateway.** Gateway не используем: free tier просит карту, российская не привязывается. Провайдер — Groq, бесплатный план, карту в кабинете не привязываем. Ключ только на сервере (env на Vercel). AI SDK, промпт и Zod-схема suggest subtasks остаются; меняются провайдер и модель. Запросы продакшена идут с Vercel. Кабинет Groq при необходимости открываем не с российского IP
 7. **OTel (теория):** понимать traces/metrics/logs — без имплементации
+8. **AI rate limiting:** лимит запросов per user (in-memory или DB counter) на suggest route. Делать после живого Groq, не на Vercel AI Gateway
 
 ### Deep Dive
 
 - **Observability triad:** logs vs metrics vs traces — когда что
 - **Source maps:** безопасная настройка (не светить код публично)
-- **AI cost control:** token limits, caching repeated prompts
+- **AI cost control:** бесплатная квота Groq, без карты; token limits и caching repeated prompts — после подключения
 - **Account linking:** почему Auth.js не линкует OAuth к User без `emailVerified`, и чем опасен `allowDangerousEmailAccountLinking` на публичном URL
 
 ### Результат месяца
