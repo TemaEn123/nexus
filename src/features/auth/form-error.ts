@@ -9,7 +9,7 @@ const AUTH_FORM_ERRORS: Record<string, string> = {
   exists: "An account with this email already exists.",
   // Auth.js кладёт это в `?error=`, если OAuth не склеили с существующим User.
   OAuthAccountNotLinked:
-    "This email is already used. Log in with email and password, then connect GitHub.",
+    "This email is already used. Log in with email and password, confirm your email, then connect GitHub.",
 };
 
 export function authFormError(

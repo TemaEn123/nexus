@@ -24,6 +24,14 @@ const serverEnvSchema = z
     SENTRY_ORG: z.string().min(1).optional(),
     SENTRY_PROJECT: z.string().min(1).optional(),
     SENTRY_URL: z.string().min(1).optional(),
+    SMTP_HOST: z.string().min(1).optional(),
+    SMTP_PORT: z
+      .string()
+      .regex(/^\d+$/, "SMTP_PORT must be a number")
+      .optional(),
+    SMTP_USER: z.string().min(1).optional(),
+    SMTP_PASSWORD: z.string().min(1).optional(),
+    EMAIL_FROM: z.string().min(1).optional(),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === "production" && !env.AUTH_SECRET) {
@@ -62,6 +70,11 @@ export function parseEnv(source: Record<string, string | undefined>) {
     SENTRY_ORG: trimmed(source, "SENTRY_ORG"),
     SENTRY_PROJECT: trimmed(source, "SENTRY_PROJECT"),
     SENTRY_URL: trimmed(source, "SENTRY_URL"),
+    SMTP_HOST: trimmed(source, "SMTP_HOST"),
+    SMTP_PORT: trimmed(source, "SMTP_PORT"),
+    SMTP_USER: trimmed(source, "SMTP_USER"),
+    SMTP_PASSWORD: trimmed(source, "SMTP_PASSWORD"),
+    EMAIL_FROM: trimmed(source, "EMAIL_FROM"),
   });
 
   if (!parsed.success) {

@@ -18,6 +18,10 @@ export default async function RegisterPage({
         Create account
       </h1>
       <RegisterForm error={authFormError(params.error)} />
+      <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+        We'll email you a confirmation link. You can open the dashboard before
+        you confirm it.
+      </p>
       <p className="mt-6 text-sm text-zinc-600 dark:text-zinc-400">
         Already have an account?{" "}
         <Link
