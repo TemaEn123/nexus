@@ -11,12 +11,12 @@ test("parseEnv allows a missing AUTH_SECRET outside production", () => {
       NODE_ENV: "development",
       DATABASE_URL: databaseUrl,
       AUTH_SECRET: "   ",
-      AI_GATEWAY_API_KEY: "",
+      GROQ_API_KEY: "",
     }),
   ).toMatchObject({
     DATABASE_URL: databaseUrl,
     AUTH_SECRET: undefined,
-    AI_GATEWAY_API_KEY: undefined,
+    GROQ_API_KEY: undefined,
   });
 });
 

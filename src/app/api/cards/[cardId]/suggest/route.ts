@@ -1,3 +1,4 @@
+import { createGroq, type GroqLanguageModelChatOptions } from "@ai-sdk/groq";
 import { createTextStreamResponse, Output, streamText } from "ai";
 import {
   SUGGEST_SUBTASKS_INSTRUCTIONS,
@@ -13,10 +14,16 @@ import { getEnv } from "@/server/env";
 import { requireApiUser } from "@/server/require-api-user";
 
 /**
- * Proxy к модели: ключ только на сервере. Body не читаем — карточка из БД.
+ * Proxy к Groq: ключ только на сервере. Body не читаем — карточка из БД.
  * Чужой / нет id → 404, как у остального API. Нет ключа → 503.
  * Ошибка стрима после 200 рвёт body — иначе `useObject` молчит на пустом 200.
  */
+const suggestModel = "openai/gpt-oss-20b";
+
+const groqReasoning = {
+  reasoningEffort: "low",
+} satisfies GroqLanguageModelChatOptions;
+
 export const maxDuration = 30;
 
 export const POST = withApiLog(async function POST(
@@ -28,11 +35,12 @@ export const POST = withApiLog(async function POST(
     return gate.response;
   }
 
-  if (!getEnv().AI_GATEWAY_API_KEY) {
+  const apiKey = getEnv().GROQ_API_KEY;
+  if (!apiKey) {
     return jsonError(
       503,
       "unavailable",
-      "AI is not configured. Add AI_GATEWAY_API_KEY.",
+      "AI is not configured. Add GROQ_API_KEY.",
     );
   }
 
@@ -45,7 +53,8 @@ export const POST = withApiLog(async function POST(
   try {
     const card = await getOwnedCard(gate.user.id, path.data);
     const result = streamText({
-      model: "openai/gpt-4o-mini",
+      model: createGroq({ apiKey })(suggestModel),
+      providerOptions: { groq: groqReasoning },
       instructions: SUGGEST_SUBTASKS_INSTRUCTIONS,
       prompt: suggestSubtasksPrompt(card),
       output: Output.object({ schema: suggestSubtasksSchema }),
