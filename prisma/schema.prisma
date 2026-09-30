@@ -28,10 +28,22 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts   Account[]
-  sessions   Session[]
-  boards     Board[]
-  activities ActivityLog[]
+  accounts     Account[]
+  sessions     Session[]
+  boards       Board[]
+  activities   ActivityLog[]
+  aiRateLimits AiRateLimit[]
+}
+
+/// Счётчик Suggest subtasks: одна строка на пользователя и сутки UTC.
+model AiRateLimit {
+  userId      String
+  windowStart DateTime
+  count       Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, windowStart])
 }
 
 model Account {

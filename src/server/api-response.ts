@@ -16,6 +16,7 @@ import { z } from "zod";
  * Стабильные коды для ветвления на клиенте; текст `message` можно менять.
  * `conflict` — гонка create на unique position. PATCH занятого индекса — 200 (shift), не 409.
  * `unavailable` — сервис не настроен (нет GROQ_API_KEY).
+ * `rate_limited` — суточный лимит Suggest subtasks (429), в GlitchTip не шлём.
  */
 export type ApiErrorCode =
   | "unauthorized"
@@ -23,6 +24,7 @@ export type ApiErrorCode =
   | "not_found"
   | "conflict"
   | "unavailable"
+  | "rate_limited"
   | "internal";
 
 type ParseSuccess<T> = { ok: true; data: T };
