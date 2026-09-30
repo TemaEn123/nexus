@@ -13,5 +13,5 @@ export default function AppError({
   error: unknown;
   retry: () => void;
 }) {
-  return <RouteError error={error} homeHref="/" retry={retry} />;
+  return <RouteError error={error} retry={retry} scope="root" />;
 }

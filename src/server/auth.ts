@@ -43,20 +43,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   providers: [
     /**
-     * По умолчанию Auth.js не склеивает OAuth с уже существующим User
-     * (часто Credentials без emailVerified) — ошибка OAuthAccountNotLinked.
+     * Без `allowDangerousEmailAccountLinking` Auth.js клеит GitHub к User
+     * с тем же email только если у того уже стоит `emailVerified`.
+     * Иначе `OAuthAccountNotLinked`: чужой GitHub не забирает аккаунт с паролем.
+     * Новый вход только через GitHub по-прежнему создаёт своего User.
      *
-     * `allowDangerousEmailAccountLinking` доверяет GitHub, что email подтверждён,
-     * и линкует Account к User с тем же email. В проде так нельзя без своей
-     * верификации почты: иначе чужой GitHub с тем же адресом заберёт аккаунт.
-     *
-     * GitHub-only: passwordHash = null. Email/password: хеш есть, Account
-     * появится после первого входа через GitHub с тем же email.
+     * Email из профиля приводим к lowercase: Credentials уже пишет так,
+     * иначе `User@x.com` и `user@x.com` не сойдутся на unique.
      */
     GitHub({
-      allowDangerousEmailAccountLinking: true,
-      // Credentials уже lowercase; без этого GitHub пишет email как в профиле,
-      // и Unique + linking не сходятся (`User@x.com` ≠ `user@x.com`).
       profile(profile) {
         return {
           id: String(profile.id),

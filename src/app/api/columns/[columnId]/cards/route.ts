@@ -1,5 +1,6 @@
 import { createCardSchema, idSchema } from "@/features/board/schemas";
 import { createCard, handleBoardError } from "@/features/board/service";
+import { withApiLog } from "@/server/api-log";
 import { jsonOk, parseBody, parseIdParam } from "@/server/api-response";
 import { requireApiUser } from "@/server/require-api-user";
 
@@ -9,7 +10,7 @@ import { requireApiUser } from "@/server/require-api-user";
  * Список карточек отдаёт `GET /api/boards/:boardId`.
  */
 
-export async function POST(
+export const POST = withApiLog(async function POST(
   request: Request,
   ctx: RouteContext<"/api/columns/[columnId]/cards">,
 ) {
@@ -35,4 +36,4 @@ export async function POST(
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});

@@ -23,9 +23,10 @@ export default defineConfig({
   ],
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   // М4 CI: pnpm build && pnpm start. Локально — dev, reuseExistingServer.
-  // Пустой ключ: E2E Suggest = 503, не живой Gateway. .env не перебивает уже заданный env.
+  // Пустой ключ: E2E Suggest = 503, не живой Groq. .env не перебивает уже заданный env.
   // NEXT_PUBLIC_E2E: без Query Devtools, иначе кнопка ворует Tab. Нужен сервер, который
   // поднял Playwright; reuseExistingServer со своим `pnpm dev` панель всё ещё покажет.
+  // Тот же флаг: `next start` в CI без SMTP пишет ссылку в лог, а не роняет register.
   webServer: {
     command:
       process.env.CI === "true"
@@ -36,7 +37,7 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       ...process.env,
-      AI_GATEWAY_API_KEY: "",
+      GROQ_API_KEY: "",
       NEXT_PUBLIC_E2E: "1",
     },
   },

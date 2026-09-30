@@ -5,6 +5,7 @@ import {
   handleBoardError,
   updateBoard,
 } from "@/features/board/service";
+import { withApiLog } from "@/server/api-log";
 import { jsonOk, parseBody, parseIdParam } from "@/server/api-response";
 import { requireApiUser } from "@/server/require-api-user";
 
@@ -13,7 +14,7 @@ import { requireApiUser } from "@/server/require-api-user";
  * Id только из URL, не из body.
  */
 
-export async function GET(
+export const GET = withApiLog(async function GET(
   _request: Request,
   ctx: RouteContext<"/api/boards/[boardId]">,
 ) {
@@ -34,9 +35,9 @@ export async function GET(
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});
 
-export async function PATCH(
+export const PATCH = withApiLog(async function PATCH(
   request: Request,
   ctx: RouteContext<"/api/boards/[boardId]">,
 ) {
@@ -62,9 +63,9 @@ export async function PATCH(
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});
 
-export async function DELETE(
+export const DELETE = withApiLog(async function DELETE(
   _request: Request,
   ctx: RouteContext<"/api/boards/[boardId]">,
 ) {
@@ -85,4 +86,4 @@ export async function DELETE(
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});

@@ -15,7 +15,13 @@ test("suggestError maps API codes and status", () => {
     "Card not found.",
   );
   expect(suggestError(new ApiClientError(503, "unavailable", "no key"))).toBe(
-    "AI is not configured. Add AI_GATEWAY_API_KEY.",
+    "AI is not configured. Add GROQ_API_KEY.",
+  );
+  expect(suggestError(new ApiClientError(429, "rate_limited", "limit"))).toBe(
+    "Daily suggestion limit reached. Try again tomorrow.",
+  );
+  expect(suggestError(new ApiClientError(429, "internal", "limit"))).toBe(
+    "Daily suggestion limit reached. Try again tomorrow.",
   );
 });
 

@@ -4,8 +4,10 @@ import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { hashPassword } from "@/features/auth/password";
 import { credentialsSchema } from "@/features/auth/schemas";
+import { issueVerificationEmail } from "@/features/auth/verification";
 import { Prisma } from "@/generated/prisma/client";
 import { signIn, signOut } from "@/server/auth";
+import { requireUser } from "@/server/require-user";
 import { prisma } from "@/shared/lib/db";
 
 /**
@@ -50,6 +52,8 @@ export async function register(formData: FormData) {
     }
     throw error;
   }
+
+  await issueVerificationEmail(email);
 
   try {
     await signIn("credentials", {
@@ -96,4 +100,20 @@ export async function loginWithGithub() {
 
 export async function logout() {
   await signOut({ redirectTo: "/login" });
+}
+
+/** Повторная ссылка для текущего пользователя. Чужой email не принимаем. */
+export async function resendVerification() {
+  const sessionUser = await requireUser();
+  const user = await prisma.user.findUnique({
+    where: { id: sessionUser.id },
+    select: { email: true, emailVerified: true },
+  });
+
+  if (!user?.email || user.emailVerified) {
+    redirect("/dashboard");
+  }
+
+  await issueVerificationEmail(user.email);
+  redirect("/dashboard?verify=sent");
 }

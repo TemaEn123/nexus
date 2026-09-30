@@ -42,7 +42,7 @@
 
 Не ломаем: `reactCompiler` и `output` только при `DOCKER=1` в `next.config.ts`. `withSentryConfig` оборачивает существующий конфиг.
 
-Порядок: граница → аккаунт GlitchTip → SDK → `captureException` → `withSentryConfig` → env Production → PR в `main` → живой throw на проде → README.
+Порядок: граница → аккаунт GlitchTip → SDK → `captureException` → `withSentryConfig` → env Production → PR в `main` → живой throw на проде → README (этот шаг).
 
 Проверка шага 0: этот файл. Пакета и env на Vercel ещё нет.
 
@@ -109,6 +109,14 @@ Token и DSN в чат не присылали — так и надо. Env на 
 
 Рядом был `Minified React error #441` — это **текст** ошибки React в production (без dev overlay), не провал source maps. Побочный эффект error boundary / RSC throw. Smoke в GlitchTip можно Resolve.
 
-## Шаг 7
+## Шаг 7 — README
 
-Ещё нет. README: ошибки прода → GlitchTip, карты не публичные.
+Сделано: в блоке CI — GlitchTip + `@sentry/nextjs`, карты не публичные. В таблице Deploy — DSN / token / org / project / `SENTRY_URL`. Ссылка на этот отчёт. Значений DSN и token в README нет.
+
+## Итог
+
+M5.1 закрыт. SDK `@sentry/nextjs`, приёмник GlitchTip Cloud (не sentry.io). На live ловились server и browser. Карты заливаются на билде Vercel и удаляются из ассетов.
+
+Не делали: Replay, wizard Sentry, JSON-логи (задача 2), новый UI ошибок (задача 3), tunnel, Preview DSN, self-host Sentry.
+
+Дальше: М5 задача 2 — structured logging.

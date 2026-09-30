@@ -4,6 +4,7 @@ import {
   handleBoardError,
   listBoards,
 } from "@/features/board/service";
+import { withApiLog } from "@/server/api-log";
 import { jsonOk, parseBody } from "@/server/api-response";
 import { requireApiUser } from "@/server/require-api-user";
 
@@ -13,7 +14,7 @@ import { requireApiUser } from "@/server/require-api-user";
  * Сессию проверяем здесь, не в proxy: API должен ответить 401, не 302.
  */
 
-export async function GET() {
+export const GET = withApiLog(async function GET(_request: Request) {
   const gate = await requireApiUser();
   if (!gate.ok) {
     return gate.response;
@@ -25,9 +26,9 @@ export async function GET() {
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withApiLog(async function POST(request: Request) {
   const gate = await requireApiUser();
   if (!gate.ok) {
     return gate.response;
@@ -44,4 +45,4 @@ export async function POST(request: Request) {
   } catch (error) {
     return handleBoardError(error);
   }
-}
+});

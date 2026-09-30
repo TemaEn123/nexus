@@ -7,6 +7,7 @@ import type {
 } from "@/features/board/schemas";
 import { ActivityType, Prisma } from "@/generated/prisma/client";
 import { jsonError } from "@/server/api-response";
+import { logger } from "@/server/logger";
 import { prisma } from "@/shared/lib/db";
 
 /**
@@ -451,14 +452,28 @@ async function moveColumn(
  */
 export function handleBoardError(error: unknown) {
   if (error instanceof NotFoundError || isMissingRecordError(error)) {
+    logger.warn("board_api_error", {
+      status: 404,
+      code: "not_found",
+      error,
+    });
     return jsonError(404, "not_found", "Not found");
   }
 
   if (error instanceof ConflictError || isUniqueConstraintError(error)) {
+    logger.warn("board_api_error", {
+      status: 409,
+      code: "conflict",
+      error,
+    });
     return jsonError(409, "conflict", "This slot is taken. Try again.");
   }
 
-  console.error(error);
+  logger.error("board_api_error", {
+    status: 500,
+    code: "internal",
+    error,
+  });
   return jsonError(500, "internal", "Something went wrong");
 }
 

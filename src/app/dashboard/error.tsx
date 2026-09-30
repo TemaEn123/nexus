@@ -12,5 +12,5 @@ export default function DashboardError({
   error: unknown;
   retry: () => void;
 }) {
-  return <RouteError error={error} retry={retry} />;
+  return <RouteError error={error} retry={retry} scope="dashboard" />;
 }

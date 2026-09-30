@@ -19,7 +19,7 @@ test("authFormError maps known codes and takes the first array item", () => {
     "An account with this email already exists.",
   );
   expect(authFormError("OAuthAccountNotLinked")).toBe(
-    "This email is already used. Log in with email and password, then connect GitHub.",
+    "This email is already used. Log in with email and password, confirm your email, then connect GitHub.",
   );
 });
 

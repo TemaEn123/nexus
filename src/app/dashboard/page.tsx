@@ -4,6 +4,7 @@ import { CreateBoardForm } from "@/features/board/create-board-form";
 import { BoardList } from "./_ui/board-list";
 import { CreateBoardError } from "./_ui/create-board-error";
 import { BoardsSkeleton } from "./_ui/dashboard-skeletons";
+import { EmailVerificationNotice } from "./_ui/email-verification-notice";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 /**
  * Protected dashboard: доски, не профиль (имя в UserMenu).
  * Page не await'ит сессию и searchParams — заголовок и форма сразу.
- * `requireUser` внутри BoardList / UserMenu (`cache()`, шаг 2).
+ * `requireUser` внутри BoardList / UserMenu / EmailVerificationNotice (`cache()`).
  * `?error=` — CreateBoardError в Suspense.
  */
 export default function DashboardPage({
@@ -21,6 +22,10 @@ export default function DashboardPage({
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-16">
       <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+
+      <Suspense fallback={null}>
+        <EmailVerificationNotice searchParams={searchParams} />
+      </Suspense>
 
       <div className="flex flex-col gap-4">
         <Suspense fallback={null}>

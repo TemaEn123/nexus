@@ -2,7 +2,7 @@ import type { TextStreamPart, ToolSet } from "ai";
 
 /**
  * Как `toTextStream`, но `error`-часть рвёт поток.
- * Иначе Gateway/модель падают после HTTP 200, `useObject` закрывает пустое тело
+ * Иначе модель падает после HTTP 200, `useObject` закрывает пустое тело
  * без `error` (смотрит только `response.ok`).
  */
 export function toTextStreamOrFail({
