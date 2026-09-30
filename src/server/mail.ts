@@ -20,13 +20,17 @@ type MailConfig =
  * SMTP готов, только если заданы host и from.
  * В development без них письмо не отправляем: ссылку пишет logger.
  * В production без них send падает, но процесс при старте не падает.
+ * E2E поднимает `next start` без SMTP: `e2e` оставляет ссылку в логе.
  */
-export function mailConfig(env: ServerEnv): MailConfig {
+export function mailConfig(
+  env: ServerEnv,
+  options?: { e2e?: boolean },
+): MailConfig {
   const host = env.SMTP_HOST;
   const from = env.EMAIL_FROM;
 
   if (!host || !from) {
-    if (env.NODE_ENV === "production") {
+    if (env.NODE_ENV === "production" && !options?.e2e) {
       throw new Error(
         "SMTP_HOST and EMAIL_FROM are required to send mail in production",
       );
@@ -49,7 +53,9 @@ export async function sendVerificationEmail(input: {
   to: string;
   url: string;
 }) {
-  const config = mailConfig(getEnv());
+  const config = mailConfig(getEnv(), {
+    e2e: process.env.NEXT_PUBLIC_E2E === "1",
+  });
 
   if (config.mode === "log") {
     logger.info("verification_email", {

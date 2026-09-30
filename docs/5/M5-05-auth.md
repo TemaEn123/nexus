@@ -35,7 +35,7 @@
 - порт по умолчанию 587, `465` включает `secure`
 - `SMTP_USER` / `SMTP_PASSWORD` необязательны для самого транспорта
 - без SMTP в development: `logger.info("verification_email", { to, verifyUrl })`
-- без SMTP в production: throw в момент отправки
+- без SMTP в production: throw в момент отправки. Исключение — Playwright с `NEXT_PUBLIC_E2E=1`: ссылка в лог, иначе CI `next start` роняет register
 - env-схема их не требует, поэтому текущий `next start` без почты не падает
 
 `.env.example`: пустые `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM`. Для Resend хост `smtp.resend.com`, пользователь `resend`.

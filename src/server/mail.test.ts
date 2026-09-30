@@ -22,6 +22,12 @@ test("mailConfig refuses to send in production without SMTP", () => {
   );
 });
 
+test("mailConfig logs the link in e2e production without SMTP", () => {
+  expect(mailConfig(env({ NODE_ENV: "production" }), { e2e: true })).toEqual({
+    mode: "log",
+  });
+});
+
 test("mailConfig uses SMTP when host and from are set", () => {
   expect(
     mailConfig(
