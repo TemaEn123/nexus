@@ -93,6 +93,7 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
         <SuggestPriority
           disabled={boardCardCount(board) === 0}
           error={priority.error}
+          empty={priority.empty}
           isLoading={priority.isLoading}
           onStop={priority.stop}
           onSuggest={() => {

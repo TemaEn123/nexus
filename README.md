@@ -30,7 +30,7 @@ nvm use
 cp .env.example .env
 ```
 
-В `.env`: Direct URL из Neon, `AUTH_SECRET` (`pnpm dlx auth secret`), `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET`, `GROQ_API_KEY` (Suggest subtasks / Suggest priority, снимок доски с сервера; [Groq](https://console.groq.com) — только сервер, не `NEXT_PUBLIC_`).
+В `.env`: Direct URL из Neon, `AUTH_SECRET` (`pnpm dlx auth secret`), `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET`, `GROQ_API_KEY` (Suggest subtasks / Suggest priority, снимок доски с сервера; [Groq](https://console.groq.com) — только сервер, не `NEXT_PUBLIC_`). На доске стрим: Suggesting… / Stop, после ошибки Retry, пустой ответ — No suggestions.
 
 Локальный OAuth App: Homepage `http://localhost:3000`, Redirect URI `http://localhost:3000/api/auth/callback/github`. Открывай именно `localhost`, не `127.0.0.1`. Для Vercel — **второе** OAuth App с production URL (один Callback на приложение).
 

@@ -2,6 +2,12 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
+import {
+  SuggestEmpty,
+  SuggestingLabel,
+  SuggestRetry,
+  SuggestSubtasksSkeleton,
+} from "@/features/ai-assistant/suggest-stream-status";
 import { useSuggestSubtasks } from "@/features/ai-assistant/use-suggest-subtasks";
 import { createCardAction } from "@/features/board/actions";
 import {
@@ -18,6 +24,8 @@ const suggestClass =
   "mt-2 text-xs font-medium text-zinc-500 hover:text-zinc-950 disabled:opacity-60 dark:hover:text-zinc-50";
 const addClass =
   "shrink-0 rounded-lg border border-zinc-300 px-2 py-0.5 text-xs font-medium hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-900";
+const retryClass =
+  "mt-1 text-xs font-medium text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-50";
 const errorClass = "mt-1 text-xs text-red-800 dark:text-red-200";
 
 /**
@@ -35,13 +43,21 @@ export function SuggestSubtasks({
   cardTitle: string;
   columnId: string;
 }) {
-  const { subtasks, isLoading, error, suggest, stop } =
+  const { subtasks, isLoading, error, empty, suggest, stop } =
     useSuggestSubtasks(cardId);
   const applyOptimistic = useApplyBoardOptimistic();
   const queryClient = useQueryClient();
   const [added, setAdded] = useState<ReadonlySet<number>>(() => new Set());
   const [addError, setAddError] = useState<string>();
   const slotIds = useRef<string[]>([]);
+  const hasSubtasks = Boolean(subtasks && subtasks.length > 0);
+
+  function startSuggest() {
+    slotIds.current = [];
+    setAdded(new Set());
+    setAddError(undefined);
+    suggest();
+  }
 
   return (
     <div className="mt-1">
@@ -58,24 +74,29 @@ export function SuggestSubtasks({
         <button
           aria-label={`Suggest subtasks for ${cardTitle}`}
           className={suggestClass}
-          onClick={() => {
-            slotIds.current = [];
-            setAdded(new Set());
-            setAddError(undefined);
-            suggest();
-          }}
+          onClick={startSuggest}
           type="button"
         >
           Suggest subtasks
         </button>
       )}
       {isLoading ? (
-        <p className="mt-1 text-xs text-zinc-500">Suggesting…</p>
+        <SuggestingLabel className="mt-1 text-xs text-zinc-500" />
       ) : null}
+      {isLoading && !hasSubtasks ? <SuggestSubtasksSkeleton /> : null}
       {error ? (
         <p className={errorClass} role="alert">
           {error}
         </p>
+      ) : null}
+      {error && !isLoading ? (
+        <SuggestRetry className={retryClass} onRetry={startSuggest} />
+      ) : null}
+      {empty ? (
+        <>
+          <SuggestEmpty className="mt-1 text-xs text-zinc-500" />
+          <SuggestRetry className={retryClass} onRetry={startSuggest} />
+        </>
       ) : null}
       {addError ? (
         <p className={errorClass} role="alert">

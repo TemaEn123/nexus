@@ -43,3 +43,75 @@ test("SuggestPriority shows reason and Stop while loading", () => {
   expect(getByText("Suggesting…")).toBeTruthy();
   expect(getByRole("status").textContent).toBe("Login unblocks OAuth.");
 });
+
+test("SuggestPriority shows a reason skeleton while loading without a reason", () => {
+  const { getByText, container, queryByRole } = render(
+    <SuggestPriority
+      disabled={false}
+      error={undefined}
+      isLoading
+      onStop={vi.fn()}
+      onSuggest={vi.fn()}
+      reason={undefined}
+    />,
+  );
+
+  expect(getByText("Suggesting…").getAttribute("aria-live")).toBe("polite");
+  expect(container.querySelector("[aria-hidden='true']")).toBeTruthy();
+  expect(queryByRole("button", { name: "Retry" })).toBeNull();
+});
+
+test("SuggestPriority shows Retry after an error", () => {
+  const onSuggest = vi.fn();
+  const { getByRole } = render(
+    <SuggestPriority
+      disabled={false}
+      error="AI is not configured. Add GROQ_API_KEY."
+      isLoading={false}
+      onStop={vi.fn()}
+      onSuggest={onSuggest}
+      reason={undefined}
+    />,
+  );
+
+  getByRole("button", { name: "Retry" }).click();
+  expect(onSuggest).toHaveBeenCalledTimes(1);
+});
+
+test("SuggestPriority Stop does not show an alert", () => {
+  const onStop = vi.fn();
+  const { getByRole, queryByRole } = render(
+    <SuggestPriority
+      disabled={false}
+      error={undefined}
+      isLoading
+      onStop={onStop}
+      onSuggest={vi.fn()}
+      reason="Login unblocks OAuth."
+    />,
+  );
+
+  getByRole("button", { name: "Stop suggesting priority" }).click();
+  expect(onStop).toHaveBeenCalledTimes(1);
+  expect(queryByRole("alert")).toBeNull();
+});
+
+test("SuggestPriority shows No suggestions and Retry without an alert", () => {
+  const onSuggest = vi.fn();
+  const { getByText, getByRole, queryByRole } = render(
+    <SuggestPriority
+      disabled={false}
+      empty
+      error={undefined}
+      isLoading={false}
+      onStop={vi.fn()}
+      onSuggest={onSuggest}
+      reason={undefined}
+    />,
+  );
+
+  expect(getByText("No suggestions")).toBeTruthy();
+  expect(queryByRole("alert")).toBeNull();
+  getByRole("button", { name: "Retry" }).click();
+  expect(onSuggest).toHaveBeenCalledTimes(1);
+});

@@ -5,6 +5,10 @@ import { useRef, useState } from "react";
 import { priorityError } from "@/features/ai-assistant/form-error";
 import { suggestPrioritySchema } from "@/features/ai-assistant/schemas";
 import { suggestFetch } from "@/features/ai-assistant/suggest-fetch";
+import {
+  priorityStreamFields,
+  suggestStreamView,
+} from "@/features/ai-assistant/suggest-stream-view";
 
 /**
  * Стрим `{ pick, reason }` с `POST /api/boards/:id/priority`.
@@ -12,22 +16,24 @@ import { suggestFetch } from "@/features/ai-assistant/suggest-fetch";
  *
  * HTTP 200 + пустое/битое тело: `useObject` не ставит `error` (только `!ok`).
  * `onFinish` ловит schema-fail; обрыв после 200 рвёт поток на сервере.
+ * Stop не ошибка и не подсветка; финиш без объекта — empty, не alert.
  */
 export function useSuggestPriority(boardId: string) {
   const stoppedRef = useRef(false);
-  const [finishError, setFinishError] = useState<unknown>();
-  const { object, submit, isLoading, stop, error, clear } = useObject({
+  const [stopped, setStopped] = useState(false);
+  const [finishedInvalid, setFinishedInvalid] = useState(false);
+  const { object, submit, isLoading, error, clear } = useObject({
     api: `/api/boards/${encodeURIComponent(boardId)}/priority`,
     id: boardId,
     schema: suggestPrioritySchema,
     fetch: suggestFetch,
-    onFinish({ error: validationError, object: value }) {
+    onFinish({ object: value }) {
       if (stoppedRef.current) {
         return;
       }
 
-      if (validationError || value == null) {
-        setFinishError(validationError ?? new Error("empty"));
+      if (value == null) {
+        setFinishedInvalid(true);
       }
     },
   });
@@ -38,21 +44,37 @@ export function useSuggestPriority(boardId: string) {
     }
 
     stoppedRef.current = false;
-    setFinishError(undefined);
+    setStopped(false);
+    setFinishedInvalid(false);
     clear();
     submit({});
   }
 
-  return {
+  const view = suggestStreamView({
+    stopped: stoppedRef.current,
+    sdkError: error,
+    hasPartial: object?.pick != null || Boolean(object?.reason),
+    finishedInvalid,
+    mapError: priorityError,
+  });
+  const fields = priorityStreamFields({
+    stopped,
     pick: object?.pick,
     reason: object?.reason,
+  });
+
+  return {
+    pick: fields.pick,
+    reason: fields.reason,
     isLoading,
-    error:
-      error || finishError ? priorityError(error ?? finishError) : undefined,
+    error: view.error,
+    empty: view.empty && !isLoading,
     suggest,
     stop() {
       stoppedRef.current = true;
-      stop();
+      setStopped(true);
+      setFinishedInvalid(false);
+      clear();
     },
   };
 }
