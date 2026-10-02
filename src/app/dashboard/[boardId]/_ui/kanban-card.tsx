@@ -21,12 +21,14 @@ export function KanbanCard({
   boardId,
   card,
   columnId,
+  highlighted = false,
   index,
   onError,
 }: {
   boardId: string;
   card: BoardCard;
   columnId: string;
+  highlighted?: boolean;
   index: number;
   onError: (message: string | undefined) => void;
 }) {
@@ -45,7 +47,8 @@ export function KanbanCard({
   return (
     <li ref={ref}>
       <article
-        className={`${cardClass} ${isDragging ? "opacity-90 shadow-lg" : ""}`}
+        aria-current={highlighted ? "true" : undefined}
+        className={`${cardClass} ${isDragging ? "opacity-90 shadow-lg" : ""} ${highlighted ? "ring-2 ring-zinc-950 ring-offset-2 dark:ring-zinc-50 dark:ring-offset-zinc-950" : ""}`}
       >
         {isTemp ? (
           <>

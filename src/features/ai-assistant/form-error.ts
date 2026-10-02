@@ -9,23 +9,50 @@ const GENERIC_SUGGEST_ERROR = "Something went wrong. Try again.";
 const SUGGEST_FORM_ERRORS: Record<string, string> = {
   unauthorized: "Sign in to suggest subtasks.",
   not_found: "Card not found.",
-  unavailable: "AI is not configured. Add AI_GATEWAY_API_KEY.",
+  unavailable: "AI is not configured. Add GROQ_API_KEY.",
 };
 
-export function suggestError(error: unknown): string {
-  if (error instanceof ApiClientError) {
-    if (error.code === "unauthorized" || error.status === 401) {
-      return SUGGEST_FORM_ERRORS.unauthorized;
-    }
+const PRIORITY_FORM_ERRORS: Record<string, string> = {
+  unauthorized: "Sign in to suggest priority.",
+  not_found: "Board not found.",
+  unavailable: SUGGEST_FORM_ERRORS.unavailable,
+  validation_error: "Board has no cards to prioritize.",
+};
 
-    if (error.code === "not_found" || error.status === 404) {
-      return SUGGEST_FORM_ERRORS.not_found;
-    }
-
-    if (error.code === "unavailable" || error.status === 503) {
-      return SUGGEST_FORM_ERRORS.unavailable;
-    }
+function mapAiError(
+  error: unknown,
+  messages: Record<string, string>,
+): string | undefined {
+  if (!(error instanceof ApiClientError)) {
+    return undefined;
   }
 
-  return GENERIC_SUGGEST_ERROR;
+  if (error.code === "unauthorized" || error.status === 401) {
+    return messages.unauthorized;
+  }
+
+  if (error.code === "not_found" || error.status === 404) {
+    return messages.not_found;
+  }
+
+  if (error.code === "unavailable" || error.status === 503) {
+    return messages.unavailable;
+  }
+
+  if (
+    messages.validation_error &&
+    (error.code === "validation_error" || error.status === 400)
+  ) {
+    return messages.validation_error;
+  }
+
+  return undefined;
+}
+
+export function suggestError(error: unknown): string {
+  return mapAiError(error, SUGGEST_FORM_ERRORS) ?? GENERIC_SUGGEST_ERROR;
+}
+
+export function priorityError(error: unknown): string {
+  return mapAiError(error, PRIORITY_FORM_ERRORS) ?? GENERIC_SUGGEST_ERROR;
 }

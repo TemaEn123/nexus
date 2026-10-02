@@ -4,22 +4,8 @@ import { useObject } from "@ai-sdk/react";
 import { useRef, useState } from "react";
 import { suggestError } from "@/features/ai-assistant/form-error";
 import { suggestSubtasksSchema } from "@/features/ai-assistant/schemas";
+import { suggestFetch } from "@/features/ai-assistant/suggest-fetch";
 import { isTempId } from "@/features/board/temp-id";
-import { apiErrorFromResponse } from "@/shared/api/http";
-
-/**
- * По умолчанию `useObject` кладёт `response.text()` в `error.message` (сырой JSON).
- * Читаем контракт `{ error: { code, message } }` до того, как SDK его проглотит.
- */
-async function suggestFetch(input: RequestInfo | URL, init?: RequestInit) {
-  const response = await fetch(input, init);
-
-  if (!response.ok) {
-    throw await apiErrorFromResponse(response);
-  }
-
-  return response;
-}
 
 /**
  * Стрим пунктов с `POST /api/cards/:id/suggest`.

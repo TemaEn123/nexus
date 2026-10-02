@@ -4,6 +4,12 @@ import { move } from "@dnd-kit/helpers";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
+import {
+  boardCardCount,
+  cardIdAtPick,
+} from "@/features/ai-assistant/board-snapshot";
+import { SuggestPriority } from "@/features/ai-assistant/suggest-priority";
+import { useSuggestPriority } from "@/features/ai-assistant/use-suggest-priority";
 import { CreateColumnForm } from "@/features/board/create-column-form";
 import { boardFormError } from "@/features/board/form-error";
 import type { BoardCard, BoardColumn } from "@/features/board/types";
@@ -46,6 +52,7 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
   const columns = dragColumns ?? sourceColumns;
   const columnsRef = useRef(columns);
   const snapshotRef = useRef(sourceColumns);
+  const priority = useSuggestPriority(boardId);
 
   columnsRef.current = columns;
 
@@ -74,9 +81,29 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
     return null;
   }
 
+  // Индекс модели совпадает со снимком из БД, не с optimistic/temp карточками.
+  const highlightedCardId =
+    typeof priority.pick === "number"
+      ? cardIdAtPick(board, priority.pick)
+      : undefined;
+
   return (
     <BoardOptimisticProvider apply={applyOptimistic}>
       <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <SuggestPriority
+          disabled={boardCardCount(board) === 0}
+          error={priority.error}
+          isLoading={priority.isLoading}
+          onStop={priority.stop}
+          onSuggest={() => {
+            if (boardCardCount(board) === 0) {
+              return;
+            }
+
+            priority.suggest();
+          }}
+          reason={priority.reason}
+        />
         {moveError ? (
           <p className={errorClass} role="alert">
             {moveError}
@@ -144,7 +171,12 @@ export function KanbanBoard({ boardId }: { boardId: string }) {
         >
           <div className="flex min-h-0 flex-1 flex-nowrap items-stretch gap-4 overflow-x-auto overflow-y-hidden pb-2">
             {columns.map((column) => (
-              <KanbanColumn boardId={boardId} column={column} key={column.id} />
+              <KanbanColumn
+                boardId={boardId}
+                column={column}
+                highlightedCardId={highlightedCardId}
+                key={column.id}
+              />
             ))}
             <CreateColumnForm boardId={boardId} />
           </div>
