@@ -5,6 +5,8 @@ Kanban-доска. Учебный проект: Next.js App Router, TypeScript, 
 **Live:** [https://nexus-pi-amber-56.vercel.app](https://nexus-pi-amber-56.vercel.app)
 [![CI](https://github.com/TemaEn123/Nexus/actions/workflows/ci.yml/badge.svg)](https://github.com/TemaEn123/Nexus/actions/workflows/ci.yml)
 
+Превью ссылки показывает доску (1200×630) и ведёт на этот же адрес Vercel.
+
 ## Демо
 
 Доска, подсказки по карточке, вход. GIF: карточка «Check the links» появляется в To Do, «Review the copy» переезжает в Done.
