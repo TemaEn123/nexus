@@ -17,9 +17,11 @@ const errorClass = "mt-1 text-xs text-red-800 dark:text-red-200";
 export function KanbanColumn({
   boardId,
   column,
+  highlightedCardId,
 }: {
   boardId: string;
   column: BoardColumn;
+  highlightedCardId?: string;
 }) {
   const isTemp = isTempId(column.id);
   const deleteColumn = useDeleteColumnMutation(boardId);
@@ -84,6 +86,7 @@ export function KanbanColumn({
               boardId={boardId}
               card={card}
               columnId={column.id}
+              highlighted={highlightedCardId === card.id}
               index={index}
               key={card.id}
               onError={setError}

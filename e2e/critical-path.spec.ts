@@ -60,7 +60,7 @@ test("register, board, card, drag, then Suggest 503", async ({ page }) => {
   await unavailable;
 
   await expect(
-    page.getByText("AI is not configured. Add AI_GATEWAY_API_KEY."),
+    page.getByText("AI is not configured. Add GROQ_API_KEY."),
   ).toBeVisible();
   await expect(suggest).toBeVisible();
   await expect(moved).toBeVisible();

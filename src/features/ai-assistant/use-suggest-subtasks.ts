@@ -2,24 +2,10 @@
 
 import { useObject } from "@ai-sdk/react";
 import { useRef, useState } from "react";
-import { suggestError } from "@/features/ai-assistant/form-error";
 import { suggestSubtasksSchema } from "@/features/ai-assistant/schemas";
+import { suggestFetch } from "@/features/ai-assistant/suggest-fetch";
+import { suggestStreamView } from "@/features/ai-assistant/suggest-stream-view";
 import { isTempId } from "@/features/board/temp-id";
-import { apiErrorFromResponse } from "@/shared/api/http";
-
-/**
- * По умолчанию `useObject` кладёт `response.text()` в `error.message` (сырой JSON).
- * Читаем контракт `{ error: { code, message } }` до того, как SDK его проглотит.
- */
-async function suggestFetch(input: RequestInfo | URL, init?: RequestInit) {
-  const response = await fetch(input, init);
-
-  if (!response.ok) {
-    throw await apiErrorFromResponse(response);
-  }
-
-  return response;
-}
 
 /**
  * Стрим пунктов с `POST /api/cards/:id/suggest`.
@@ -28,22 +14,23 @@ async function suggestFetch(input: RequestInfo | URL, init?: RequestInit) {
  *
  * HTTP 200 + пустое/битое тело: `useObject` не ставит `error` (только `!ok`).
  * `onFinish` ловит schema-fail; обрыв после 200 рвёт поток на сервере.
+ * Stop не ошибка; финиш без пунктов — empty, не alert.
  */
 export function useSuggestSubtasks(cardId: string) {
   const stoppedRef = useRef(false);
-  const [finishError, setFinishError] = useState<unknown>();
+  const [finishedInvalid, setFinishedInvalid] = useState(false);
   const { object, submit, isLoading, stop, error, clear } = useObject({
     api: `/api/cards/${encodeURIComponent(cardId)}/suggest`,
     id: cardId,
     schema: suggestSubtasksSchema,
     fetch: suggestFetch,
-    onFinish({ error: validationError, object: value }) {
+    onFinish({ object: value }) {
       if (stoppedRef.current) {
         return;
       }
 
-      if (validationError || value == null) {
-        setFinishError(validationError ?? new Error("empty"));
+      if (value == null) {
+        setFinishedInvalid(true);
       }
     },
   });
@@ -54,19 +41,27 @@ export function useSuggestSubtasks(cardId: string) {
     }
 
     stoppedRef.current = false;
-    setFinishError(undefined);
+    setFinishedInvalid(false);
     clear();
     submit({});
   }
 
+  const view = suggestStreamView({
+    stopped: stoppedRef.current,
+    sdkError: error,
+    hasPartial: Boolean(object?.subtasks?.length),
+    finishedInvalid,
+  });
+
   return {
     subtasks: object?.subtasks,
     isLoading,
-    error:
-      error || finishError ? suggestError(error ?? finishError) : undefined,
+    error: view.error,
+    empty: view.empty && !isLoading,
     suggest,
     stop() {
       stoppedRef.current = true;
+      setFinishedInvalid(false);
       stop();
     },
     clear,

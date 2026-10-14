@@ -15,7 +15,7 @@ import { z } from "zod";
 /**
  * Стабильные коды для ветвления на клиенте; текст `message` можно менять.
  * `conflict` — гонка create на unique position. PATCH занятого индекса — 200 (shift), не 409.
- * `unavailable` — сервис не настроен (нет AI_GATEWAY_API_KEY).
+ * `unavailable` — сервис не настроен (нет GROQ_API_KEY).
  */
 export type ApiErrorCode =
   | "unauthorized"
